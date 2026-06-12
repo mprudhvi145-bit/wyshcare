@@ -1,0 +1,56 @@
+##
+##
+## ============================================================================
+## WYSHCARE PLATFORM
+## ============================================================================
+##
+## File: infra/k8s/base/backend-deployment.yaml
+##
+## Product:
+## WyshCare Healthcare Operating System
+##
+## Brand:
+## WYSH
+##
+## Founder:
+## Vimarshak Prudhvi
+##
+## Purpose:
+## Configuration file for base
+##
+## Responsibilities:
+##  * - Support infrastructure functionality
+##
+## Last Reviewed:
+## 2026-06-12
+##
+## ============================================================================
+## (c) Wysh Technologies
+## Built by Vimarshak Prudhvi
+## All Rights Reserved
+## ============================================================================
+##
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wyshcare-backend
+  namespace: wyshcare
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: wyshcare-backend
+  template:
+    metadata:
+      labels:
+        app: wyshcare-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/wyshcare/backend:latest
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - secretRef:
+                name: wyshcare-secrets

@@ -1,0 +1,58 @@
+##
+##
+## ============================================================================
+## WYSHCARE PLATFORM
+## ============================================================================
+##
+## File: infra/k8s/base/hpa.yml
+##
+## Product:
+## WyshCare Healthcare Operating System
+##
+## Brand:
+## WYSH
+##
+## Founder:
+## Vimarshak Prudhvi
+##
+## Purpose:
+## Configuration file for base
+##
+## Responsibilities:
+##  * - Support infrastructure functionality
+##
+## Last Reviewed:
+## 2026-06-12
+##
+## ============================================================================
+## (c) Wysh Technologies
+## Built by Vimarshak Prudhvi
+## All Rights Reserved
+## ============================================================================
+##
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: wyshcare-api
+  namespace: wyshcare
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: wyshcare-api
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80

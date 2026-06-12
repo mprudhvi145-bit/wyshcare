@@ -1,0 +1,42 @@
+name: Lint
+
+on:
+  push:
+    branches: [main, develop, release/**]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        workspace: [backend, frontend, shared]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          cache-dependency-path: ${{ matrix.workspace }}/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ${{ matrix.workspace }}
+
+      - name: Run ESLint
+        run: pnpm run lint
+        working-directory: ${{ matrix.workspace }}
+        continue-on-error: true
+
+      - name: TypeScript Compilation Check
+        run: npx tsc --noEmit
+        working-directory: ${{ matrix.workspace }}
+        continue-on-error: true

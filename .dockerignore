@@ -1,0 +1,15 @@
+node_modules
+.git
+.env
+.env.local
+*.md
+dist
+.vscode
+.idea
+*.log
+.DS_Store
+coverage
+*.tsbuildinfo
+frontend/.next
+backend/dist
+shared/dist

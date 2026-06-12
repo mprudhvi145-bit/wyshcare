@@ -1,0 +1,57 @@
+##
+##
+## ============================================================================
+## WYSHCARE PLATFORM
+## ============================================================================
+##
+## File: infra/k8s/base/ingress.yaml
+##
+## Product:
+## WyshCare Healthcare Operating System
+##
+## Brand:
+## WYSH
+##
+## Founder:
+## Vimarshak Prudhvi
+##
+## Purpose:
+## Configuration file for base
+##
+## Responsibilities:
+##  * - Support infrastructure functionality
+##
+## Last Reviewed:
+## 2026-06-12
+##
+## ============================================================================
+## (c) Wysh Technologies
+## Built by Vimarshak Prudhvi
+## All Rights Reserved
+## ============================================================================
+##
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wyshcare
+  namespace: wyshcare
+spec:
+  rules:
+    - host: app.wyshcare.in
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wyshcare-frontend
+                port:
+                  number: 3000
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: wyshcare-backend
+                port:
+                  number: 3001

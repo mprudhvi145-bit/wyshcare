@@ -1,0 +1,45 @@
+##
+##
+## ============================================================================
+## WYSHCARE PLATFORM
+## ============================================================================
+##
+## File: infra/grafana/dashboards/dashboard.yml
+##
+## Product:
+## WyshCare Healthcare Operating System
+##
+## Brand:
+## WYSH
+##
+## Founder:
+## Vimarshak Prudhvi
+##
+## Purpose:
+## Configuration file for dashboards
+##
+## Responsibilities:
+##  * - Support infrastructure functionality
+##
+## Last Reviewed:
+## 2026-06-12
+##
+## ============================================================================
+## (c) Wysh Technologies
+## Built by Vimarshak Prudhvi
+## All Rights Reserved
+## ============================================================================
+##
+
+apiVersion: 1
+
+providers:
+  - name: 'WyshCare'
+    orgId: 1
+    folder: 'WyshCare'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards

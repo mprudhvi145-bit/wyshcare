@@ -1,0 +1,88 @@
+##
+##
+## ============================================================================
+## WYSHCARE PLATFORM
+## ============================================================================
+##
+## File: infra/prometheus/alerts.yml
+##
+## Product:
+## WyshCare Healthcare Operating System
+##
+## Brand:
+## WYSH
+##
+## Founder:
+## Vimarshak Prudhvi
+##
+## Purpose:
+## Configuration file for prometheus
+##
+## Responsibilities:
+##  * - Support infrastructure functionality
+##
+## Last Reviewed:
+## 2026-06-12
+##
+## ============================================================================
+## (c) Wysh Technologies
+## Built by Vimarshak Prudhvi
+## All Rights Reserved
+## ============================================================================
+##
+
+groups:
+  - name: wyshcare-api
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: rate(wyshcare_http_request_errors_total[5m]) / rate(wyshcare_http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'API error rate exceeds 5%'
+          description: 'Error rate is {{ $value | humanizePercentage }} over the last 5 minutes'
+
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.95, rate(wyshcare_http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'P95 request latency exceeds 2s'
+          description: 'P95 latency is {{ $value }}s over the last 5 minutes'
+
+      - alert: ServiceDown
+        expr: up{job="wyshcare-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'WyshCare API is down'
+          description: 'The API endpoint has been unreachable for over 1 minute'
+
+      - alert: ErrorBudgetExhausted
+        expr: wyshcare_http_request_errors_total / (wyshcare_http_requests_total + 1) > 0.01
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Monthly error budget near exhaustion'
+          description: 'Error budget remaining: {{ $value | humanizePercentage }}'
+
+      - alert: DatabaseDown
+        expr: wyshcare_health_checks_total{dependency="postgres",status="error"} > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'PostgreSQL is unreachable'
+
+      - alert: RedisDown
+        expr: wyshcare_health_checks_total{dependency="redis",status="error"} > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Redis is unreachable'

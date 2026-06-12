@@ -1,0 +1,35 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "strictPropertyInitialization": false,
+    "outDir": "./dist",
+    "sourceMap": true,
+    "incremental": true,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/test",
+    "scripts"
+  ],
+  "_wyshcare": {
+    "product": "WyshCare Healthcare Operating System",
+    "brand": "WYSH",
+    "founder": "Vimarshak Prudhvi",
+    "file": "backend/tsconfig.json",
+    "last_reviewed": "2026-06-12"
+  }
+}

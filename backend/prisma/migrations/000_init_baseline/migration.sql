@@ -1,0 +1,35 @@
+--
+-- ============================================================================
+-- WYSHCARE PLATFORM
+-- ============================================================================
+--
+-- File: backend/prisma/migrations/000_init_baseline/migration.sql
+--
+-- Product:
+-- WyshCare Healthcare Operating System
+--
+-- Brand:
+-- WYSH
+--
+-- Founder:
+-- Vimarshak Prudhvi
+--
+-- Purpose:
+-- SQL migration or query: migration
+--
+-- Responsibilities:
+--  * - Manage database schema and data migrations
+--
+-- Database:
+--  - None identified
+--
+-- Last Reviewed:
+-- 2026-06-12
+--
+-- ============================================================================
+-- (c) Wysh Technologies
+-- Built by Vimarshak Prudhvi
+-- All Rights Reserved
+-- ============================================================================
+--
+

@@ -1,0 +1,23 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "ESNext"
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "_wyshcare": {
+    "product": "WyshCare Healthcare Operating System",
+    "brand": "WYSH",
+    "founder": "Vimarshak Prudhvi",
+    "file": "shared/tsconfig.json",
+    "last_reviewed": "2026-06-12"
+  }
+}

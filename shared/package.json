@@ -1,0 +1,28 @@
+{
+  "name": "@wyshcare/shared",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\"",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.3"
+  },
+  "_wyshcare": {
+    "product": "WyshCare Healthcare Operating System",
+    "brand": "WYSH",
+    "founder": "Vimarshak Prudhvi",
+    "file": "shared/package.json",
+    "last_reviewed": "2026-06-12"
+  }
+}

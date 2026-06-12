@@ -1,0 +1,41 @@
+# ============================================================================
+# WYSHCARE PLATFORM — CODEOWNERS
+# ============================================================================
+# Each line is a file pattern followed by one or more owners.
+# Order matters: the last matching pattern takes precedence.
+
+# Global owners
+* @vimarshak
+
+# Backend
+/backend/ @vimarshak
+/backend/src/modules/ai*/ @vimarshak
+/backend/src/modules/digital-twin/ @vimarshak
+/backend/src/modules/ehr/ @vimarshak
+/backend/src/modules/auth/ @vimarshak
+/backend/src/modules/vault/ @vimarshak
+/backend/src/modules/consent/ @vimarshak
+/backend/src/modules/abdm/ @vimarshak
+/backend/prisma/ @vimarshak
+
+# Frontend
+/frontend/ @vimarshak
+/frontend/src/app/ @vimarshak
+/frontend/src/features/ @vimarshak
+
+# Mobile
+/apps/patient-mobile/ @vimarshak
+/apps/doctor-mobile/ @vimarshak
+
+# Shared library
+/shared/ @vimarshak
+
+# Infrastructure
+/infra/ @vimarshak
+/.github/ @vimarshak
+/Dockerfile @vimarshak
+/docker-compose.yml @vimarshak
+
+# Documentation
+/docs/ @vimarshak
+/README.md @vimarshak

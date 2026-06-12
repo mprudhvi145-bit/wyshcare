@@ -1,0 +1,134 @@
+name: Wysh
+options:
+  bundleIdPrefix: com.wyshcare
+  deploymentTarget:
+    iOS: "18.0"
+  xcodeVersion: "16.0"
+  carthage: false
+  createIntermediateGroups: true
+  usesTabs: false
+  indentWidth: 4
+  tabWidth: 4
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) SWIFT_STRICT_CONCURRENCY
+    IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  Wysh:
+    type: application
+    platform: iOS
+    bundleId: com.wyshcare.app
+    deploymentTarget: "18.0"
+    info:
+      path: Wysh/Resources/Info.plist
+    entitlements:
+      path: Wysh/Resources/Wysh.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wyshcare.app
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: YES
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+    sources:
+      - path: Wysh/App
+      - path: Wysh/Core
+      - path: Wysh/Features
+      - path: Wysh/Shared
+    dependencies:
+      - sdk: SwiftData.framework
+      - sdk: HealthKit.framework
+      - sdk: StoreKit.framework
+      - sdk: WidgetKit.framework
+      - sdk: ActivityKit.framework
+      - sdk: UIKit.framework
+      - sdk: SwiftUI.framework
+      - sdk: UserNotifications.framework
+      - sdk: CloudKit.framework
+    preBuildScripts:
+      - name: SwiftLint
+        script: |
+          if command -v swiftlint &> /dev/null; then
+            swiftlint
+          else
+            echo "SwiftLint not installed; skipping"
+          fi
+        runOnlyWhenInstalling: false
+    previews:
+      enabled: true
+
+  WyshWidgets:
+    type: app-extension
+    platform: iOS
+    bundleId: com.wyshcare.app.WyshWidgets
+    deploymentTarget: "18.0"
+    info:
+      path: WyshWidgets/Info.plist
+    entitlements:
+      path: WyshWidgets/WyshWidgets.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wyshcare.app.WyshWidgets
+        SWIFT_EMIT_LOC_STRINGS: YES
+    sources:
+      - path: WyshWidgets
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+
+  WyshLiveActivities:
+    type: app-extension
+    platform: iOS
+    bundleId: com.wyshcare.app.WyshLiveActivities
+    deploymentTarget: "18.0"
+    info:
+      path: WyshLiveActivities/Info.plist
+    entitlements:
+      path: WyshLiveActivities/WyshLiveActivities.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wyshcare.app.WyshLiveActivities
+        SWIFT_EMIT_LOC_STRINGS: YES
+    sources:
+      - path: WyshLiveActivities
+    dependencies:
+      - sdk: ActivityKit.framework
+      - sdk: SwiftUI.framework
+
+  WyshKit:
+    type: framework
+    platform: iOS
+    bundleId: com.wyshcare.WyshKit
+    deploymentTarget: "18.0"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wyshcare.WyshKit
+        SKIP_INSTALL: YES
+        SWIFT_EMIT_LOC_STRINGS: NO
+    sources:
+      - path: WyshKit
+
+schemes:
+  Wysh:
+    build:
+      targets:
+        Wysh: all
+        WyshWidgets: all
+        WyshLiveActivities: all
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

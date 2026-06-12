@@ -1,0 +1,272 @@
+//
+// ============================================================================
+// WYSHCARE PLATFORM
+// ============================================================================
+//
+// File: docs/V15_SCHEMA_ADDITIONS.prisma
+//
+// Product:
+// WyshCare Healthcare Operating System
+//
+// Brand:
+// WYSH
+//
+// Founder:
+// Vimarshak Prudhvi
+//
+// Purpose:
+// V15_SCHEMA_ADDITIONS — Database module
+//
+// Responsibilities:
+//  * - Support database functionality
+//
+// Models Defined:
+//  - None identified
+//
+// Last Reviewed:
+// 2026-06-12
+//
+// ============================================================================
+// (c) Wysh Technologies
+// Built by Vimarshak Prudhvi
+// All Rights Reserved
+// ============================================================================
+//
+
+// ============================================================
+// V1.5 Schema Additions — WyshCare Healthcare Identity Platform
+// ============================================================
+// Add these models to the existing prisma/schema.prisma
+// ============================================================
+
+// ------------------------------------------------------------
+// Core Identity — WyshID replaces auto-increment as primary ref
+// ------------------------------------------------------------
+model WyshIdentity {
+  id        String   @id @default(cuid())
+  wyshId    String   @unique @db.VarChar(13) // Format: WYSH-XXXXXXXX
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  publicKey String   @db.VarChar(64) // For future cryptographic operations
+  createdAt DateTime @default(now())
+
+  @@map("wysh_identities")
+}
+
+model IdentityAudit {
+  id          String   @id @default(cuid())
+  wyshId      String?
+  userId      String
+  action      String   @db.VarChar(50) // CREATED, UPDATED, LINKED, UNLINKED
+  changeType  String?  @db.VarChar(50) // PHONE, EMAIL, PROFILE, DEVICE
+  oldValue    String?
+  newValue    String?
+  ipAddress   String?  @db.VarChar(45)
+  userAgent   String?  @db.VarChar(512)
+  createdAt   DateTime @default(now())
+
+  @@map("identity_audits")
+}
+
+// ------------------------------------------------------------
+// Health Graph — Property graph model in PostgreSQL adjacency list
+// ------------------------------------------------------------
+model PatientNode {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  familyEdgesFrom FamilyEdge[] @relation("FromPatient")
+  familyEdgesTo   FamilyEdge[] @relation("ToPatient")
+  careEvents      CareEvent[]
+
+  @@map("patient_nodes")
+}
+
+model FamilyEdge {
+  id           String       @id @default(cuid())
+  fromPatientId String
+  fromPatient  PatientNode  @relation("FromPatient", fields: [fromPatientId], references: [id])
+  toPatientId  String
+  toPatient    PatientNode  @relation("ToPatient", fields: [toPatientId], references: [id])
+  relationship String       @db.VarChar(50) // SELF, SPOUSE, CHILD, PARENT, SIBLING, GUARDIAN, OTHER
+  metadata     Json?
+  createdAt    DateTime     @default(now())
+
+  @@map("family_edges")
+}
+
+model ProviderNode {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   @db.VarChar(50) // DOCTOR, CLINIC, HOSPITAL, LAB, PHARMACY
+  userId    String?  @unique
+  createdAt DateTime @default(now())
+
+  careEvents CareEvent[]
+
+  @@map("provider_nodes")
+}
+
+model CareEvent {
+  id         String          @id @default(cuid())
+  patientId  String
+  patient    PatientNode     @relation(fields: [patientId], references: [id])
+  providerId String?
+  provider   ProviderNode?   @relation(fields: [providerId], references: [id])
+  eventType  String          @db.VarChar(50) // APPOINTMENT, PRESCRIPTION, DIAGNOSTIC, HOSPITALIZATION, VACCINATION
+  occurredAt DateTime
+  summary    String?
+  metadata   Json?
+  createdAt  DateTime        @default(now())
+
+  conditionEdges   ClinicalEdge[] @relation("CareCondition")
+  medicationEdges  ClinicalEdge[] @relation("CareMedication")
+
+  @@map("care_events")
+}
+
+model ClinicalEdge {
+  id            String   @id @default(cuid())
+  fromEventId   String?
+  fromEvent     CareEvent? @relation("CareCondition", fields: [fromEventId], references: [id])
+  toEventId     String?
+  toEvent       CareEvent? @relation("CareMedication", fields: [toEventId], references: [id])
+  edgeType      String   @db.VarChar(50) // HAS_CONDITION, HAS_ALLERGY, PRESCRIBED, PRODUCED, INCLUDES
+  label         String?  // Human-readable edge label
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  @@map("clinical_edges")
+}
+
+// ------------------------------------------------------------
+// Consent Engine — ABDM-compatible consent artifacts
+// ------------------------------------------------------------
+model ConsentPurpose {
+  id          String   @id @default(cuid())
+  code        String   @unique @db.VarChar(20) // PATRQT, CAREMGT, BTG, PUBHLTH, HPAYMT, RESEARCH, WELLNESS, OPTOUT
+  label       String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  grants ConsentGrant[]
+
+  @@map("consent_purposes")
+}
+
+// Add these fields to existing ConsentGrant model:
+// hiTypes          String[]    @default([])
+// accessMode       String?     @db.VarChar(20)  // VIEW, STORE, QUERY, STREAM
+// consentPurposeId String?
+// consentPurpose   ConsentPurpose? @relation(fields: [consentPurposeId], references: [id])
+// artifactSignature String?   @db.Text          // JWS signature for ABDM compatibility
+// artifactExpiresAt DateTime?
+
+model ConsentAudit {
+  id             String   @id @default(cuid())
+  consentGrantId String
+  actorUserId    String
+  action         String   @db.VarChar(50) // GRANTED, REVOKED, EXPIRED, ACCESSED, EMERGENCY_ACCESS
+  ipAddress      String?  @db.VarChar(45)
+  geoRegion      String?  @db.VarChar(100)
+  userAgent      String?  @db.VarChar(512)
+  metadata       Json?
+  createdAt      DateTime @default(now())
+
+  @@map("consent_audits")
+}
+
+// ------------------------------------------------------------
+// Encrypted Vault — Document storage with classification
+// ------------------------------------------------------------
+enum DocumentCategory {
+  Prescription
+  LabReport
+  DischargeSummary
+  Radiology
+  Vaccination
+  Insurance
+  Claims
+  MedicalBills
+  WellnessRecord
+  Other
+}
+
+model HealthDocument {
+  id              String           @id @default(cuid())
+  userId          String
+  category        DocumentCategory
+  fileName        String
+  contentType     String           @db.VarChar(100)
+  storageKey      String           @unique // MinIO/S3 key
+  encrypted       Boolean          @default(true)
+  encryptionContext String?        // Context for derived encryption key
+  fileHash        String?          @db.VarChar(64) // SHA-256 for integrity
+  fileSize        Int
+  metadata        Json?
+  isDeleted       Boolean          @default(false)
+  uploadedAt      DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  versions HealthDocumentVersion[]
+  shares   DocumentShare[]
+
+  @@map("health_documents")
+}
+
+model HealthDocumentVersion {
+  id              String  @id @default(cuid())
+  documentId      String
+  document        HealthDocument @relation(fields: [documentId], references: [id])
+  versionNumber   Int
+  storageKey      String
+  fileHash        String?  @db.VarChar(64)
+  fileSize        Int
+  uploadedAt      DateTime @default(now())
+
+  @@unique([documentId, versionNumber])
+  @@map("health_document_versions")
+}
+
+model DocumentShare {
+  id            String   @id @default(cuid())
+  documentId    String
+  document      HealthDocument @relation(fields: [documentId], references: [id])
+  sharedWithUserId String?
+  accessToken   String   @unique
+  expiresAt     DateTime
+  accessCount   Int      @default(0)
+  lastAccessedAt DateTime?
+  createdAt     DateTime @default(now())
+
+  @@map("document_shares")
+}
+
+// ------------------------------------------------------------
+// Timeline Engine — Health memory aggregation
+// ------------------------------------------------------------
+// Add these fields to existing TimelineEvent model:
+// sourceId       String?     // Reference to source event (care event, prescription, etc.)
+// structuredData Json?       // Structured event data for aggregation queries
+// entryType Enum updated to support: CONSULTATION, PRESCRIPTION, DIAGNOSTIC, HOSPITALIZATION, VACCINATION, ALLERGY, CONDITION, PROCEDURE, MEDICATION, NOTE
+
+// ------------------------------------------------------------
+// Extend User model with additional V1.5 fields:
+// wyshIdentity   WyshIdentity?
+// abhaAddress    String?   @db.VarChar(200)
+// abhaNumber     String?   @db.VarChar(20)
+// emergencyContactName  String?
+// emergencyContactPhone String?
+// deviceFingerprint     String?
+// lastLoginAt           DateTime?
+// lastLoginIp           String?  @db.VarChar(45)
+// geoRegion             String?  @db.VarChar(100)
+
+// ------------------------------------------------------------
+// Extend AuditLog model with additional V1.5 fields:
+// ipAddress   String? @db.VarChar(45)
+// geoRegion   String? @db.VarChar(100)
+// userAgent   String? @db.VarChar(512)

@@ -1,0 +1,57 @@
+##
+##
+## ============================================================================
+## WYSHCARE PLATFORM
+## ============================================================================
+##
+## File: infra/k8s/base/services.yaml
+##
+## Product:
+## WyshCare Healthcare Operating System
+##
+## Brand:
+## WYSH
+##
+## Founder:
+## Vimarshak Prudhvi
+##
+## Purpose:
+## Configuration file for base
+##
+## Responsibilities:
+##  * - Execute business logic for infrastructure operations
+ * - Coordinate data access and external API calls
+##
+## Last Reviewed:
+## 2026-06-12
+##
+## ============================================================================
+## (c) Wysh Technologies
+## Built by Vimarshak Prudhvi
+## All Rights Reserved
+## ============================================================================
+##
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wyshcare-backend
+  namespace: wyshcare
+spec:
+  selector:
+    app: wyshcare-backend
+  ports:
+    - port: 3001
+      targetPort: 3001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wyshcare-frontend
+  namespace: wyshcare
+spec:
+  selector:
+    app: wyshcare-frontend
+  ports:
+    - port: 3000
+      targetPort: 3000

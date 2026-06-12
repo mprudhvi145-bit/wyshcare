@@ -1,0 +1,98 @@
+# =========================
+# ENV / SECRETS (CRITICAL)
+# =========================
+.env
+.env.*
+!.env.example
+
+# Supabase / Cloud secrets
+supabase/.env
+supabase/.env.*
+
+# =========================
+# NODE / NPM
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# BUILD OUTPUTS
+# =========================
+dist/
+build/
+.out/
+coverage/
+
+# =========================
+# PRISMA
+# =========================
+# Local dev databases only — migrations MUST be tracked for reproducibility
+prisma/dev.db
+prisma/*.db
+prisma/*.db-journal
+
+# Prisma engines cache
+node_modules/.prisma/
+
+# =========================
+# AI / MODEL ARTIFACTS
+# =========================
+models/
+*.bin
+*.onnx
+*.gguf
+
+# Ollama / local AI
+.ollama/
+
+# =========================
+# LOGS
+# =========================
+logs/
+*.log
+
+# =========================
+# TEMP / RUNTIME
+# =========================
+tmp/
+temp/
+.cache/
+.eslintcache
+
+# =========================
+# OS FILES
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# IDE / EDITORS
+# =========================
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+
+.idea/
+*.swp
+*.swo
+
+# =========================
+# TESTING
+# =========================
+*.spec.log
+*.test.log
+
+# =========================
+# DOCKER
+# =========================
+docker-compose.override.yml
+
+# =========================
+# MISC
+# =========================
+*.pem
+*.key
+*.crt

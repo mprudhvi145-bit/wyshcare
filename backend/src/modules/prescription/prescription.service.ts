@@ -1,0 +1,490 @@
+/**
+ * ============================================================================
+ * WYSHCARE PLATFORM
+ * ============================================================================
+ *
+ * File: backend/src/modules/prescription/prescription.service.ts
+ *
+ * Product:
+ * WyshCare Healthcare Operating System
+ *
+ * Brand:
+ * WYSH
+ *
+ * Founder:
+ * Vimarshak Prudhvi
+ *
+ * Purpose:
+ * Business logic service for prescription
+ *
+ * Responsibilities:
+ * - Execute business logic for prescription operations
+ * - Coordinate data access and external API calls
+ *
+ * Used By:
+ - backend/src/providers/storage/storage.module.ts
+ - backend/src/modules/abdm/abdm.module.ts
+ - backend/src/modules/prescription/interaction-engine.service.ts
+ - backend/src/modules/interoperability/interoperability.module.ts
+ - backend/src/modules/digital-twin/digital-twin.service.ts
+ - backend/src/main.ts
+ - backend/src/modules/health-graph/health-graph.service.ts
+ - backend/src/modules/search/search.controller.ts
+ *
+ * Calls:
+ - crypto
+ - common
+ *
+ * Dependencies:
+ - crypto
+ - common
+ *
+ * Security Notes:
+Standard authentication and authorization apply
+ *
+ * Business Domain:
+Prescription
+ *
+ * Last Reviewed:
+2026-06-12
+ *
+ * ============================================================================
+ * (c) Wysh Technologies
+ * Built by Vimarshak Prudhvi
+ * All Rights Reserved
+ * ============================================================================
+ */
+
+import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import type { Prisma, PrescriptionStatus } from '@prisma/client';
+import { PrismaService } from '../../providers/prisma/prisma.service';
+import { DomainEventsService } from '../../providers/events/events.service';
+import { DomainEventType } from '../../providers/events/events.types';
+import { AuditLogService } from '../../common/services/audit-log.service';
+import { InteractionEngineService } from './interaction-engine.service';
+import { PrescriptionPDFService } from './prescription-pdf.service';
+import { PrescriptionQRService } from './prescription-qr.service';
+import { CreatePrescriptionDto, IssuePrescriptionDto, UpdatePrescriptionDto } from './dto';
+import { randomUUID } from 'crypto';
+
+@Injectable()
+export class PrescriptionService {
+  private readonly logger = new Logger(PrescriptionService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly events: DomainEventsService,
+    private readonly auditLog: AuditLogService,
+    private readonly interactionEngine: InteractionEngineService,
+    private readonly pdfService: PrescriptionPDFService,
+    private readonly qrService: PrescriptionQRService,
+  ) {}
+
+  private mapPrescription(prescription: any) {
+    if (!prescription) return null;
+    const mapped = {
+      ...prescription,
+      items: prescription.PrescriptionItem ?? prescription.items ?? [],
+    };
+    delete mapped.PrescriptionItem;
+    return mapped;
+  }
+
+  async create(dto: CreatePrescriptionDto, doctorUserId: string, tenantId?: string) {
+    const doctorProfile = await this.prisma.doctorProfile.findFirst({
+      where: { userId: doctorUserId },
+      select: { id: true },
+    });
+
+    if (!doctorProfile) throw new BadRequestException('Doctor profile not found');
+
+    const conflictChecks = await this.interactionEngine.checkPatientDrugs(
+      dto.patientUserId,
+      dto.items.filter((i) => i.drugId).map((i) => i.drugId!),
+    );
+
+    const prescription = await this.prisma.prescription.create({
+      data: {
+        tenantId,
+        patientUserId: dto.patientUserId,
+        doctorProfileId: dto.doctorProfileId ?? doctorProfile.id,
+        consultationId: dto.consultationId,
+        appointmentId: dto.appointmentId,
+        diagnosis: dto.diagnosis ? JSON.parse(JSON.stringify(dto.diagnosis)) : undefined,
+        diagnosisSummary: dto.diagnosisSummary,
+        instructions: dto.instructions,
+        notes: dto.notes,
+        status: 'DRAFT',
+        issuedAt: new Date(),
+        PrescriptionItem: {
+          create: dto.items.map((item) => ({
+            id: randomUUID(),
+            drugId: item.drugId,
+            drugName: item.drugName,
+            dosage: item.dosage,
+            frequency: item.frequency,
+            route: item.route,
+            durationDays: item.durationDays,
+            instructions: item.instructions,
+            quantity: item.quantity,
+            refills: item.refills ?? 0,
+            substitutionAllowed: item.substitutionAllowed ?? true,
+          })),
+        },
+      },
+      include: {
+        PrescriptionItem: true,
+        patientUser: { select: { id: true, fullName: true } },
+        doctorProfile: {
+          include: { user: { select: { id: true, fullName: true } } },
+        },
+      },
+    });
+
+    this.events.publish(DomainEventType.PRESCRIPTION_CREATED, {
+      prescriptionId: prescription.id,
+      patientUserId: dto.patientUserId,
+      doctorProfileId: prescription.doctorProfileId,
+      itemCount: dto.items.length,
+      doctorUserId,
+      tenantId,
+    });
+
+    await this.auditLog.capture({
+      actorUserId: doctorUserId,
+      patientUserId: dto.patientUserId,
+      action: 'PRESCRIPTION_CREATED',
+      resourceType: 'Prescription',
+      resourceId: prescription.id,
+      metadata: { itemCount: dto.items.length, tenantId },
+    });
+
+    return { prescription: this.mapPrescription(prescription), warnings: conflictChecks };
+  }
+
+  async issue(id: string, dto: IssuePrescriptionDto, doctorUserId: string) {
+    const prescription = await this.prisma.prescription.findUnique({
+      where: { id },
+      include: { PrescriptionItem: true },
+    });
+
+    if (!prescription) throw new NotFoundException('Prescription not found');
+    if (prescription.status !== 'DRAFT') throw new BadRequestException('Only draft prescriptions can be issued');
+
+    const updateData: Record<string, unknown> = { status: 'ACTIVE' };
+
+    if (dto.pharmacyPartnerId) {
+      updateData.pharmacyPartnerId = dto.pharmacyPartnerId;
+    }
+
+    const updated = await this.prisma.prescription.update({
+      where: { id },
+      data: updateData,
+      include: { PrescriptionItem: true, patientUser: { select: { id: true, fullName: true } } },
+    });
+
+    const verification = await this.qrService.generateVerification(id);
+
+    await this.auditLog.capture({
+      actorUserId: doctorUserId,
+      patientUserId: prescription.patientUserId,
+      action: 'PRESCRIPTION_ISSUED',
+      resourceType: 'Prescription',
+      resourceId: id,
+      metadata: { status: 'ACTIVE', pharmacyPartnerId: dto.pharmacyPartnerId },
+    });
+
+    if (dto.sendToPharmacy && dto.pharmacyPartnerId) {
+      await this.sendToPharmacy(id, dto.pharmacyPartnerId, doctorUserId);
+    }
+
+    return { prescription: this.mapPrescription(updated), verification };
+  }
+
+  async update(id: string, dto: UpdatePrescriptionDto, _doctorUserId: string) {
+    const prescription = await this.prisma.prescription.findUnique({
+      where: { id },
+    });
+
+    if (!prescription) throw new NotFoundException('Prescription not found');
+    if (prescription.status !== 'DRAFT') throw new BadRequestException('Only draft prescriptions can be edited');
+
+    const updateData: Record<string, unknown> = {};
+    if (dto.diagnosisSummary !== undefined) updateData.diagnosisSummary = dto.diagnosisSummary;
+    if (dto.instructions !== undefined) updateData.instructions = dto.instructions;
+    if (dto.notes !== undefined) updateData.notes = dto.notes;
+
+    if (dto.items) {
+      await this.prisma.prescriptionItem.deleteMany({ where: { prescriptionId: id } });
+      await this.prisma.prescriptionItem.createMany({
+        data: dto.items.map((item) => ({
+            id: randomUUID(),
+          prescriptionId: id,
+          drugId: item.drugId,
+          drugName: item.drugName,
+          dosage: item.dosage,
+          frequency: item.frequency,
+          route: item.route,
+          durationDays: item.durationDays,
+          instructions: item.instructions,
+          quantity: item.quantity,
+          refills: item.refills ?? 0,
+          substitutionAllowed: item.substitutionAllowed ?? true,
+        })),
+      });
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      await this.prisma.prescription.update({ where: { id }, data: updateData });
+    }
+
+    const updated = await this.prisma.prescription.findUnique({
+      where: { id },
+      include: { PrescriptionItem: true },
+    });
+
+    return this.mapPrescription(updated);
+  }
+
+  async cancel(id: string, doctorUserId: string) {
+    const prescription = await this.prisma.prescription.findUnique({ where: { id } });
+    if (!prescription) throw new NotFoundException('Prescription not found');
+
+    const updated = await this.prisma.prescription.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+    });
+
+    await this.auditLog.capture({
+      actorUserId: doctorUserId,
+      patientUserId: prescription.patientUserId,
+      action: 'PRESCRIPTION_CANCELLED',
+      resourceType: 'Prescription',
+      resourceId: id,
+    });
+
+    return this.mapPrescription(updated);
+  }
+
+  async getById(id: string) {
+    const prescription = await this.prisma.prescription.findUnique({
+      where: { id },
+      include: {
+        PrescriptionItem: { include: { Drug: { select: { genericName: true, drugClass: true, atcCode: true } } } },
+        patientUser: { select: { id: true, fullName: true, dateOfBirth: true, gender: true } },
+        doctorProfile: {
+          include: { user: { select: { id: true, fullName: true } } },
+        },
+        PrescriptionVerification: true,
+      },
+    });
+
+    if (!prescription) throw new NotFoundException('Prescription not found');
+    return this.mapPrescription(prescription);
+  }
+
+  async getByPatient(patientUserId: string, status?: string) {
+    const where: Prisma.PrescriptionWhereInput = { patientUserId };
+    if (status) where.status = status as PrescriptionStatus;
+
+    const prescriptions = await this.prisma.prescription.findMany({
+      where,
+      include: {
+        PrescriptionItem: true,
+        doctorProfile: {
+          include: { user: { select: { id: true, fullName: true } } },
+        },
+        PrescriptionVerification: { select: { verificationUrl: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return prescriptions.map((p) => this.mapPrescription(p));
+  }
+
+  async getByDoctor(doctorProfileId: string, status?: string) {
+    const where: Prisma.PrescriptionWhereInput = { doctorProfileId };
+    if (status) where.status = status as PrescriptionStatus;
+
+    const prescriptions = await this.prisma.prescription.findMany({
+      where,
+      include: {
+        PrescriptionItem: true,
+        patientUser: { select: { id: true, fullName: true, phoneNumber: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return prescriptions.map((p) => this.mapPrescription(p));
+  }
+
+  async getByConsultation(consultationId: string) {
+    const prescriptions = await this.prisma.prescription.findMany({
+      where: { consultationId },
+      include: { PrescriptionItem: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return prescriptions.map((p) => this.mapPrescription(p));
+  }
+
+  async generatePdf(id: string): Promise<string> {
+    const data = await this.pdfService.generatePrescriptionData(id);
+    return this.pdfService.generateHtml(data);
+  }
+
+  async verifyQr(qrHash: string) {
+    return this.qrService.verifyPrescription(qrHash);
+  }
+
+
+
+  async createSchedule(prescriptionId: string) {
+    const updatedPrescription = await this.prisma.prescription.findUnique({
+      where: { id: prescriptionId },
+      include: { PrescriptionItem: true },
+    });
+
+    if (!updatedPrescription) throw new NotFoundException('Prescription not found');
+
+    const schedules = [];
+    for (const item of updatedPrescription.PrescriptionItem) {
+      const times = this.parseFrequencyToTimes(item.frequency);
+      const schedule = await this.prisma.medicationSchedule.create({
+        data: {
+          id: randomUUID(),
+          userId: updatedPrescription.patientUserId,
+          prescriptionItemId: item.id,
+          drugId: item.drugId,
+          times: JSON.parse(JSON.stringify(times)),
+          daysOfWeek: [] as number[],
+          startDate: new Date(),
+          endDate: new Date(Date.now() + item.durationDays * 86400000),
+          updatedAt: new Date(),
+        },
+      });
+      schedules.push(schedule);
+    }
+
+    return schedules;
+  }
+
+  async sendToPharmacy(prescriptionId: string, pharmacyPartnerId: string, doctorUserId: string) {
+    const prescription = await this.prisma.prescription.findUnique({
+      where: { id: prescriptionId },
+      include: { PrescriptionItem: true, patientUser: true },
+    });
+
+    if (!prescription) throw new NotFoundException('Prescription not found');
+
+    const medicinePayload = prescription.PrescriptionItem.map((item) => ({
+      name: item.drugName,
+      dosage: item.dosage,
+      frequency: item.frequency,
+      durationDays: item.durationDays,
+      quantity: item.quantity,
+      instructions: item.instructions,
+    }));
+
+    const order = await this.prisma.pharmacyOrder.create({
+      data: {
+        tenantId: (prescription as { tenantId?: string }).tenantId ?? '',
+        userId: prescription.patientUserId,
+        partnerId: pharmacyPartnerId,
+        prescriptionId,
+        consultationId: prescription.consultationId,
+        status: 'PENDING_VERIFICATION',
+        deliveryAddress: {},
+        medicinePayload: JSON.parse(JSON.stringify(medicinePayload)),
+      },
+    });
+
+    this.events.publish(DomainEventType.MEDICATION_ORDERED, {
+      orderId: order.id,
+      prescriptionId,
+      patientUserId: prescription.patientUserId,
+      pharmacyPartnerId,
+      doctorUserId,
+      tenantId: (prescription as { tenantId?: string }).tenantId ?? '',
+    });
+
+    return order;
+  }
+
+  private parseFrequencyToTimes(frequency: string): string[] {
+    const f = frequency.toUpperCase();
+    if (f === 'QD' || f === 'OD' || f === 'ONCE DAILY' || f === 'Q24H') return ['08:00'];
+    if (f === 'BID' || f === 'TWICE DAILY' || f === 'Q12H') return ['08:00', '20:00'];
+    if (f === 'TID' || f === 'THREE TIMES DAILY' || f === 'Q8H') return ['08:00', '14:00', '20:00'];
+    if (f === 'QID' || f === 'FOUR TIMES DAILY' || f === 'Q6H') return ['06:00', '12:00', '18:00', '22:00'];
+    if (f === 'QHS' || f === 'AT BEDTIME') return ['21:00'];
+    if (f === 'QAM' || f === 'IN MORNING') return ['08:00'];
+    if (f === 'QPM' || f === 'IN EVENING') return ['20:00'];
+    if (f.startsWith('Q') && f.length > 1) {
+      const hours = parseInt(f.slice(1), 10);
+      if (!isNaN(hours) && hours > 0) {
+        const count = Math.floor(24 / hours);
+        return Array.from({ length: count }, (_, i) => {
+          const h = i * hours;
+          return `${String(Math.floor(h)).padStart(2, '0')}:00`;
+        });
+      }
+    }
+    return ['08:00', '20:00'];
+  }
+
+  async logAdherence(scheduleId: string, userId: string, status: 'TAKEN' | 'MISSED' | 'SKIPPED') {
+    const schedule = await this.prisma.medicationSchedule.findUnique({ where: { id: scheduleId } });
+    if (!schedule) throw new NotFoundException('Schedule not found');
+
+    const now = new Date();
+    const scheduledAt = new Date(now);
+    scheduledAt.setHours(0, 0, 0, 0);
+
+    return this.prisma.adherenceLog.create({
+      data: {
+        id: randomUUID(),
+        scheduleId,
+        userId,
+        status,
+        scheduledAt,
+        takenAt: status === 'TAKEN' ? now : null,
+        delayedBy: status === 'TAKEN' ? 0 : null,
+      },
+    });
+  }
+
+  async getAdherenceReport(patientUserId: string, days: number = 30) {
+    const startDate = new Date(Date.now() - days * 86400000);
+
+    const schedules = await this.prisma.medicationSchedule.findMany({
+      where: {
+        userId: patientUserId,
+        startDate: { lte: new Date() },
+        OR: [{ endDate: null }, { endDate: { gte: startDate } }],
+      },
+      include: {
+        Drug: { select: { genericName: true } },
+        AdherenceLog: {
+          where: { scheduledAt: { gte: startDate } },
+          orderBy: { scheduledAt: 'desc' },
+        },
+      },
+    });
+
+    const total = schedules.reduce((sum, s) => sum + s.AdherenceLog.length, 0);
+    const taken = schedules.reduce((sum, s) => sum + s.AdherenceLog.filter((l) => l.status === 'TAKEN').length, 0);
+
+    return {
+      days,
+      schedules: schedules.map((s) => ({
+        drugName: s.Drug?.genericName ?? 'Unknown',
+        totalDoses: s.AdherenceLog.length,
+        taken: s.AdherenceLog.filter((l) => l.status === 'TAKEN').length,
+        missed: s.AdherenceLog.filter((l) => l.status === 'MISSED').length,
+        skipped: s.AdherenceLog.filter((l) => l.status === 'SKIPPED').length,
+        adherencePercent: s.AdherenceLog.length > 0
+          ? Math.round((s.AdherenceLog.filter((l) => l.status === 'TAKEN').length / s.AdherenceLog.length) * 100)
+          : 0,
+      })),
+      overallAdherence: total > 0 ? Math.round((taken / total) * 100) : 0,
+    };
+  }
+}

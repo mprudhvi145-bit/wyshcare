@@ -1,0 +1,1266 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "WyshCare API",
+    "description": "Consumer healthcare infrastructure platform APIs",
+    "version": "1.0.0",
+    "contact": {
+      "name": "WyshCare Engineering"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.wyshcare.com/api/v1",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3001/api/v1",
+      "description": "Local Development"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "data": {},
+          "error": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "RequestOtpDto": {
+        "type": "object",
+        "required": [
+          "phoneNumber",
+          "purpose"
+        ],
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "example": "+919876543210"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "LOGIN",
+              "REGISTER",
+              "ACCESS_SHARE"
+            ]
+          }
+        }
+      },
+      "VerifyOtpDto": {
+        "type": "object",
+        "required": [
+          "phoneNumber",
+          "otpCode",
+          "deviceName"
+        ],
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "example": "+919876543210"
+          },
+          "otpCode": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 6
+          },
+          "deviceName": {
+            "type": "string",
+            "example": "iPhone 16 Pro"
+          },
+          "fullName": {
+            "type": "string"
+          }
+        }
+      },
+      "RefreshSessionDto": {
+        "type": "object",
+        "required": [
+          "refreshToken"
+        ],
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          },
+          "deviceName": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthSession": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserProfile"
+          }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreatePrescriptionDto": {
+        "type": "object",
+        "required": [
+          "patientUserId",
+          "items"
+        ],
+        "properties": {
+          "patientUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consultationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "diagnosis": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrescriptionItemDto"
+            }
+          }
+        }
+      },
+      "PrescriptionItemDto": {
+        "type": "object",
+        "required": [
+          "drugId",
+          "dosage",
+          "frequency",
+          "duration"
+        ],
+        "properties": {
+          "drugId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "drugName": {
+            "type": "string"
+          },
+          "dosage": {
+            "type": "string"
+          },
+          "frequency": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer"
+          }
+        }
+      },
+      "IssuePrescriptionDto": {
+        "type": "object",
+        "properties": {
+          "pharmacyPartnerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sendToPharmacy": {
+            "type": "boolean"
+          },
+          "signatureData": {
+            "type": "string"
+          }
+        }
+      },
+      "Prescription": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "doctorProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "consultationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ISSUED",
+              "DISPENSED",
+              "CANCELLED",
+              "EXPIRED"
+            ]
+          },
+          "diagnosis": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "qrHash": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PrescriptionItemDto"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Appointment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "doctorProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "CANCELLED",
+              "COMPLETED",
+              "NO_SHOW"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "VIDEO",
+              "AUDIO",
+              "IN_PERSON",
+              "CHAT"
+            ]
+          },
+          "reasonForVisit": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateAppointmentDto": {
+        "type": "object",
+        "required": [
+          "doctorProfileId",
+          "scheduledAt"
+        ],
+        "properties": {
+          "doctorProfileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "VIDEO",
+              "AUDIO",
+              "IN_PERSON",
+              "CHAT"
+            ]
+          },
+          "reasonForVisit": {
+            "type": "string"
+          },
+          "symptoms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DoctorProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "registrationNumber": {
+            "type": "string"
+          },
+          "specializations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "qualifications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "experience": {
+            "type": "integer"
+          },
+          "consultationFee": {
+            "type": "number"
+          }
+        }
+      },
+      "HealthRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object"
+          },
+          "fileUrl": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ConsentGrant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "grantorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "granteeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "dataScope": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "REVOKED",
+              "EXPIRED"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CreateAllergyDto": {
+        "type": "object",
+        "required": [
+          "patientId",
+          "allergen",
+          "severity"
+        ],
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "allergen": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "MILD",
+              "MODERATE",
+              "SEVERE",
+              "CRITICAL"
+            ]
+          },
+          "reaction": {
+            "type": "string"
+          },
+          "onsetDate": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "CreateConditionDto": {
+        "type": "object",
+        "required": [
+          "patientId",
+          "conditionName",
+          "icdCode"
+        ],
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conditionName": {
+            "type": "string"
+          },
+          "icdCode": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "RESOLVED",
+              "CHRONIC"
+            ]
+          },
+          "onsetDate": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "CreateEncounterDto": {
+        "type": "object",
+        "required": [
+          "patientId",
+          "providerId",
+          "encounterClass"
+        ],
+        "properties": {
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "providerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "encounterClass": {
+            "type": "string",
+            "enum": [
+              "AMB",
+              "EMER",
+              "IMP",
+              "OBSENC",
+              "SS"
+            ]
+          },
+          "reasonCode": {
+            "type": "string"
+          },
+          "chiefComplaint": {
+            "type": "string"
+          }
+        }
+      },
+      "ClinicalOrder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderType": {
+            "type": "string",
+            "enum": [
+              "LAB",
+              "IMAGING",
+              "PROCEDURE",
+              "MEDICATION",
+              "REFERRAL"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "ROUTINE",
+              "URGENT",
+              "STAT",
+              "ASAP"
+            ]
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "InsuranceProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "InsuranceClaim": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "claimAmount": {
+            "type": "number"
+          },
+          "approvedAmount": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "SUBMITTED",
+              "UNDER_REVIEW",
+              "APPROVED",
+              "REJECTED",
+              "SETTLED"
+            ]
+          }
+        }
+      },
+      "DiagnosticOrder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "partnerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SAMPLE_COLLECTED",
+              "PROCESSING",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          }
+        }
+      },
+      "PharmacyOrder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "pharmacyPartnerId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "prescriptionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "CONFIRMED",
+              "PREPARING",
+              "READY",
+              "DISPATCHED",
+              "DELIVERED",
+              "CANCELLED"
+            ]
+          },
+          "totalAmount": {
+            "type": "number"
+          }
+        }
+      },
+      "DigitalTwin": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "overallScore": {
+            "type": "number"
+          },
+          "riskLevel": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "MODERATE",
+              "HIGH",
+              "CRITICAL"
+            ]
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "HealthGoal": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "FITNESS",
+              "NUTRITION",
+              "MENTAL_HEALTH",
+              "MEDICATION",
+              "CHRONIC_MANAGEMENT",
+              "PREVENTIVE",
+              "CUSTOM"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "targetValue": {
+            "type": "number"
+          },
+          "currentValue": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "COMPLETED",
+              "PAUSED",
+              "ABANDONED"
+            ]
+          }
+        }
+      },
+      "HealthScore": {
+        "type": "object",
+        "properties": {
+          "overall": {
+            "type": "number"
+          },
+          "dimensions": {
+            "type": "object"
+          },
+          "calculatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "EmergencyProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bloodType": {
+            "type": "string"
+          },
+          "allergies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "medications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "emergencyContacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmergencyContact"
+            }
+          }
+        }
+      },
+      "EmergencyContact": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "relationship": {
+            "type": "string"
+          }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SENT",
+              "READ",
+              "FAILED"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "LOW",
+              "NORMAL",
+              "HIGH",
+              "CRITICAL"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PaymentOrder": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CREATED",
+              "AUTHORIZED",
+              "CAPTURED",
+              "REFUNDED",
+              "FAILED"
+            ]
+          },
+          "gatewayOrderId": {
+            "type": "string"
+          }
+        }
+      },
+      "VitalsRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "heartRate": {
+            "type": "number"
+          },
+          "systolicBP": {
+            "type": "number"
+          },
+          "diastolicBP": {
+            "type": "number"
+          },
+          "temperature": {
+            "type": "number"
+          },
+          "respiratoryRate": {
+            "type": "number"
+          },
+          "oxygenSaturation": {
+            "type": "number"
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LabSample": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "diagnosticOrderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sampleType": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING_COLLECTION",
+              "COLLECTED",
+              "IN_TRANSIT",
+              "RECEIVED",
+              "REJECTED"
+            ]
+          },
+          "collectedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "LabResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sampleId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "testName": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "referenceRange": {
+            "type": "string"
+          },
+          "isAbnormal": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "CarePlan": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "patientUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "DRAFT",
+              "ACTIVE",
+              "COMPLETED",
+              "SUSPENDED",
+              "CANCELLED"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Authentication & session management"
+    },
+    {
+      "name": "identity",
+      "description": "User profile & identity"
+    },
+    {
+      "name": "doctors",
+      "description": "Doctor profiles & onboarding"
+    },
+    {
+      "name": "telemedicine",
+      "description": "Appointments & video consultations"
+    },
+    {
+      "name": "Prescription",
+      "description": "Prescription lifecycle management"
+    },
+    {
+      "name": "vault",
+      "description": "Health records vault"
+    },
+    {
+      "name": "consent",
+      "description": "Data sharing consent management"
+    },
+    {
+      "name": "family",
+      "description": "Family relationships"
+    },
+    {
+      "name": "discovery",
+      "description": "Doctor & service discovery"
+    },
+    {
+      "name": "pharmacy",
+      "description": "Pharmacy orders"
+    },
+    {
+      "name": "diagnostics",
+      "description": "Diagnostic orders & reports"
+    },
+    {
+      "name": "payments",
+      "description": "Payment processing"
+    },
+    {
+      "name": "notifications",
+      "description": "Notification management"
+    },
+    {
+      "name": "Digital Twin",
+      "description": "AI-powered health digital twin"
+    },
+    {
+      "name": "health-graph",
+      "description": "Health knowledge graph"
+    },
+    {
+      "name": "Health Graph V2",
+      "description": "Enhanced health graph with lifestyle & wearables"
+    },
+    {
+      "name": "health-score",
+      "description": "Health scoring system"
+    },
+    {
+      "name": "health-twin",
+      "description": "AI health assistant"
+    },
+    {
+      "name": "goals",
+      "description": "Health goals tracking"
+    },
+    {
+      "name": "Emergency",
+      "description": "Emergency profile & SOS"
+    },
+    {
+      "name": "ai",
+      "description": "AI copilot services"
+    },
+    {
+      "name": "ai-risk",
+      "description": "AI risk assessment"
+    },
+    {
+      "name": "ai-preventive",
+      "description": "AI preventive care"
+    },
+    {
+      "name": "ai-lifestyle",
+      "description": "AI lifestyle recommendations"
+    },
+    {
+      "name": "care-plans",
+      "description": "Care plan management"
+    },
+    {
+      "name": "timeline",
+      "description": "Patient timeline"
+    },
+    {
+      "name": "search",
+      "description": "Universal search"
+    },
+    {
+      "name": "dashboard",
+      "description": "Patient dashboard"
+    },
+    {
+      "name": "Enterprise EHR",
+      "description": "Enterprise Electronic Health Records"
+    },
+    {
+      "name": "Insurance + Claims OS",
+      "description": "Insurance & claims processing"
+    },
+    {
+      "name": "Provider Graph",
+      "description": "Provider network graph"
+    },
+    {
+      "name": "Workspaces",
+      "description": "Nurse, Lab & Pharmacy workspaces"
+    },
+    {
+      "name": "Clinic OS - Admin",
+      "description": "Clinic administration"
+    },
+    {
+      "name": "Clinic OS - Billing",
+      "description": "Clinic billing"
+    },
+    {
+      "name": "Clinic OS - Reception",
+      "description": "Clinic reception & queue"
+    },
+    {
+      "name": "Clinic OS - Clinical Twin",
+      "description": "Clinic analytics twin"
+    },
+    {
+      "name": "ABDM",
+      "description": "Ayushman Bharat Digital Mission"
+    },
+    {
+      "name": "NHCX",
+      "description": "National Health Claims Exchange"
+    },
+    {
+      "name": "admin",
+      "description": "Platform administration"
+    },
+    {
+      "name": "queue-monitor",
+      "description": "Background queue monitoring"
+    },
+    {
+      "name": "staff",
+      "description": "Staff management"
+    },
+    {
+      "name": "wysh",
+      "description": "Wysh AI assistant dashboard"
+    }
+  ],
+  "_wyshcare": {
+    "product": "WyshCare Healthcare Operating System",
+    "brand": "WYSH",
+    "founder": "Vimarshak Prudhvi",
+    "file": "docs/openapi.json",
+    "last_reviewed": "2026-06-12"
+  }
+}

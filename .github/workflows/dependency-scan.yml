@@ -1,0 +1,37 @@
+name: Dependency Scan
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # Every Monday at 6 AM UTC
+
+jobs:
+  dependency-scan:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        workspace: [backend, frontend, shared]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          cache-dependency-path: ${{ matrix.workspace }}/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ${{ matrix.workspace }}
+
+      - name: Run npm audit
+        run: pnpm audit --audit-level=high
+        working-directory: ${{ matrix.workspace }}
+        continue-on-error: true

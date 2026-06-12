@@ -1,0 +1,38 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1" # Every Monday at 6 AM UTC
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+
+      - name: Check for .env files
+        run: |
+          COMMITTED_ENV=$(git ls-files --cached | grep -E '\.env$' | grep -v '\.env\.example$' || true)
+          if [ -n "$COMMITTED_ENV" ]; then
+            echo "::error::Real .env files are committed! FILES: $COMMITTED_ENV"
+            exit 1
+          fi
+          echo "No .env files committed."
+
+      - name: Check for secrets in file names
+        run: |
+          SECRET_FILES=$(git ls-files --cached | grep -E '\.(pem|key|crt|p12|pfx|cer)$' || true)
+          if [ -n "$SECRET_FILES" ]; then
+            echo "::error::Secret key files are committed! FILES: $SECRET_FILES"
+            exit 1
+          fi
+          echo "No secret files committed."

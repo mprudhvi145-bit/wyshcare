@@ -1,0 +1,2819 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WyshCare Clinical OS — Master Prototype</title>
+  
+  <!-- Tailwind CSS CDN for structure -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bgDark: '#0B0D10',
+            cardDark: '#15181D',
+            borderDark: 'rgba(255,255,255,0.08)',
+            genMed: '#8FD3D1',
+            dental: '#FFD84D',
+            ent: '#2EE59D',
+            derm: '#FF5A5A',
+            ophthal: '#5856D6',
+            brandTeal: '#8FD3D1'
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font Outfit -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    
+    .glass {
+      background: rgba(21, 24, 29, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .light .glass {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Teeth selection outline */
+    .tooth-btn.active {
+      outline: 2px solid #8FD3D1;
+      outline-offset: 2px;
+    }
+    
+    /* Pin animation */
+    .lesion-pin {
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body class="bg-[#0B0D10] text-[#F1F2F6] dark:bg-bgDark dark:text-[#F1F2F6] light:bg-gray-50 light:text-gray-900 transition-colors duration-300 custom-scroll">
+
+  <!-- ========================================================================= -->
+  <!-- 1. LANDING PAGE VIEW -->
+  <!-- ========================================================================= -->
+  <section id="view-landing" class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-brandTeal flex items-center justify-center text-bgDark font-bold text-xl">W</div>
+        <span class="text-xl font-bold tracking-tight text-brandTeal">WyshCare</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400 dark:text-gray-400 light:text-gray-600">
+        <a href="#landing-features" class="hover:text-brandTeal transition">Features</a>
+        <a href="#landing-specialties" class="hover:text-brandTeal transition">Clinical Specialties</a>
+        <a href="#landing-pricing" class="hover:text-brandTeal transition">Enterprise Plans</a>
+        <a href="#landing-solutions" class="hover:text-brandTeal transition">Solutions</a>
+      </div>
+      <div class="flex items-center gap-4">
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-white/10 dark:hover:bg-white/10 light:hover:bg-black/10 transition">
+          <i data-lucide="sun-moon" class="w-5 h-5 text-brandTeal"></i>
+        </button>
+        <button onclick="navigateTo('view-auth')" class="px-5 py-2.5 rounded-xl bg-brandTeal text-bgDark font-bold text-sm hover:opacity-90 transition">
+          Launch Operating System
+        </button>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="flex-1 flex flex-col justify-center items-center text-center px-6 py-24 relative overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brandTeal/10 via-transparent to-transparent">
+      <div class="absolute -top-40 w-[500px] h-[500px] bg-brandTeal/5 blur-[120px] rounded-full"></div>
+      <div class="max-w-4xl relative z-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brandTeal/10 text-brandTeal text-xs font-semibold mb-6 border border-brandTeal/20">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+          AI-driven Clinical Operating System
+        </div>
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
+          The Next-Generation <br>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandTeal via-ent to-ophthal">Clinical Operating System</span>
+        </h1>
+        <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12">
+          Anatomy-first diagnostic tracking, AI medical scribe transcription, unified telehealth panels, and advanced decision alert metrics. Built for doctors, hospitals, and patient care.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <button onclick="navigateTo('view-auth')" class="px-8 py-4 rounded-xl bg-brandTeal text-bgDark font-bold hover:shadow-lg hover:shadow-brandTeal/20 transition flex items-center justify-center gap-2">
+            Enter Dashboard Console
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+          <a href="#landing-features" class="px-8 py-4 rounded-xl border border-white/10 hover:bg-white/5 transition flex items-center justify-center gap-2 text-sm font-medium">
+            Explore Ecosystem
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Features Grid -->
+    <section id="landing-features" class="px-6 py-24 border-t border-white/5 bg-black/20">
+      <div class="max-w-7xl mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-16 text-center">Unifying Healthcare Operability</h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="glass p-8 rounded-3xl hover:border-brandTeal/30 transition">
+            <div class="w-12 h-12 rounded-xl bg-brandTeal/10 flex items-center justify-center text-brandTeal mb-6">
+              <i data-lucide="activity"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-4">Anatomy-First Workspaces</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">
+              Ditch boilerplate forms. Capture visual tooth mapping, audiogram charts, body coordinates pins, and refraction eye sectors directly.
+            </p>
+          </div>
+          <div class="glass p-8 rounded-3xl hover:border-ent/30 transition">
+            <div class="w-12 h-12 rounded-xl bg-ent/10 flex items-center justify-center text-ent mb-6">
+              <i data-lucide="assistant"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-4">AI Scribe & CDS Engine</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">
+              Listen live during visits to generate clinical SOAP summaries, warn for drug interaction logs, and calculate real-time renal/diabetic/cardiovascular risk.
+            </p>
+          </div>
+          <div class="glass p-8 rounded-3xl hover:border-ophthal/30 transition">
+            <div class="w-12 h-12 rounded-xl bg-ophthal/10 flex items-center justify-center text-ophthal mb-6">
+              <i data-lucide="shield-alert"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-4">Emergency Consent Ledger</h3>
+            <p class="text-gray-400 text-sm leading-relaxed">
+              Provide doctors with encrypted temporary medical record vault credentials, tracked via real-time digital signature trails.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="landing-pricing" class="px-6 py-24">
+      <div class="max-w-7xl mx-auto text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">WyshCare Licensing Plans</h2>
+        <p class="text-gray-400 mb-16 max-w-xl mx-auto">Select a subscription plan tailored to your health institution size.</p>
+        <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div class="glass p-8 rounded-3xl flex flex-col text-left">
+            <h3 class="text-lg font-bold mb-2">Individual Doctor</h3>
+            <div class="text-3xl font-bold mb-6 text-brandTeal">₹2,499<span class="text-sm font-normal text-gray-400">/mo</span></div>
+            <ul class="text-sm text-gray-400 space-y-4 mb-8 flex-1">
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brandTeal"></i> 1 Doctor Account</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brandTeal"></i> Interactive EMR Workspaces</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brandTeal"></i> Standard AI Scribe (100 visits)</li>
+            </ul>
+            <button onclick="navigateTo('view-auth')" class="w-full py-3 rounded-xl bg-brandTeal/10 hover:bg-brandTeal/20 text-brandTeal font-bold transition">Get Started</button>
+          </div>
+          <div class="glass p-8 rounded-3xl flex flex-col text-left border-2 border-brandTeal/30 relative">
+            <div class="absolute -top-4 right-6 bg-brandTeal text-bgDark px-3 py-1 rounded-full text-xs font-bold">POPULAR</div>
+            <h3 class="text-lg font-bold mb-2">Clinical Branch</h3>
+            <div class="text-3xl font-bold mb-6 text-brandTeal">₹12,999<span class="text-sm font-normal text-gray-400">/mo</span></div>
+            <ul class="text-sm text-gray-400 space-y-4 mb-8 flex-1">
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brandTeal"></i> Up to 15 Doctor Logins</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brandTeal"></i> Full Pharmacy & Lab modules</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brandTeal"></i> Unlimited AI Decision Support</li>
+            </ul>
+            <button onclick="navigateTo('view-auth')" class="w-full py-3 rounded-xl bg-brandTeal text-bgDark font-bold transition">Launch Clinical Hub</button>
+          </div>
+          <div class="glass p-8 rounded-3xl flex flex-col text-left">
+            <h3 class="text-lg font-bold mb-2">Hospital Network</h3>
+            <div class="text-3xl font-bold mb-6 text-brandTeal">Custom Pricing</div>
+            <ul class="text-sm text-gray-400 space-y-4 mb-8 flex-1">
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brandTeal"></i> Unlimited Staff & Departments</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brandTeal"></i> Advanced Executive Dashboards</li>
+              <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-brandTeal"></i> 24/7 Priority SLA Response</li>
+            </ul>
+            <button onclick="navigateTo('view-auth')" class="w-full py-3 rounded-xl bg-brandTeal/10 hover:bg-brandTeal/20 text-brandTeal font-bold transition">Contact Sales</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-auto px-6 py-8 border-t border-white/5 bg-black/40 text-center text-sm text-gray-500">
+      &copy; 2026 WyshCare Technologies. Complete Clickable Sandbox Demonstration. All rights reserved.
+    </footer>
+  </section>
+
+
+  <!-- ========================================================================= -->
+  <!-- 2. AUTHENTICATION VIEW -->
+  <!-- ========================================================================= -->
+  <section id="view-auth" class="min-h-screen hidden flex items-center justify-center p-6 bg-gradient-to-tr from-bgDark to-cardDark">
+    <div class="w-full max-w-md glass p-8 rounded-3xl relative">
+      <button onclick="navigateTo('view-landing')" class="absolute top-6 left-6 text-gray-400 hover:text-white transition flex items-center gap-1.5 text-xs font-semibold">
+        <i data-lucide="chevron-left" class="w-4 h-4"></i> Back to Home
+      </button>
+      
+      <div class="text-center mt-6 mb-8">
+        <div class="w-12 h-12 rounded-2xl bg-brandTeal flex items-center justify-center text-bgDark font-bold text-2xl mx-auto mb-4">W</div>
+        <h2 class="text-2xl font-bold">Launch WyshCare OS</h2>
+        <p class="text-sm text-gray-400 mt-1.5">Choose your platform role credential to login</p>
+      </div>
+
+      <!-- Role Selector Tabs -->
+      <div class="grid grid-cols-4 gap-2 mb-6 bg-black/30 p-1 rounded-xl">
+        <button onclick="setAuthRole('doctor')" id="btn-role-doctor" class="py-2.5 rounded-lg text-xs font-bold bg-brandTeal text-bgDark transition">Doctor</button>
+        <button onclick="setAuthRole('patient')" id="btn-role-patient" class="py-2.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">Patient</button>
+        <button onclick="setAuthRole('hospital')" id="btn-role-hospital" class="py-2.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">Hospital</button>
+        <button onclick="setAuthRole('admin')" id="btn-role-admin" class="py-2.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">Admin</button>
+      </div>
+
+      <!-- Login Form fields -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Security Profile Login ID</label>
+          <input type="text" id="auth-username" value="doctor@wyshcare.com" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandTeal text-white" placeholder="doctor@wyshcare.com">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase tracking-wider">Access Token / Password</label>
+          <input type="password" id="auth-password" value="********" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-brandTeal text-white" placeholder="••••••••">
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-gray-400">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" checked class="rounded border-white/10 bg-black/40 text-brandTeal focus:ring-0">
+            Remember Terminal
+          </label>
+          <a href="#" onclick="alert('Simulation: A reset code has been sent to your registered credentials.')" class="hover:text-brandTeal">Forgot Access Key?</a>
+        </div>
+
+        <button onclick="login()" class="w-full py-3.5 mt-2 rounded-xl bg-brandTeal text-bgDark font-bold text-sm hover:opacity-90 transition flex items-center justify-center gap-2">
+          Verify Security Key
+          <i data-lucide="key" class="w-4 h-4"></i>
+        </button>
+
+        <div class="relative py-2 flex items-center justify-center">
+          <span class="w-full border-t border-white/5"></span>
+          <span class="absolute px-3 bg-[#15181D] text-[10px] font-bold text-gray-500 uppercase tracking-widest">Biometric Check</span>
+        </div>
+
+        <button onclick="simulatePasskey()" class="w-full py-3.5 rounded-xl border border-white/10 hover:bg-white/5 transition text-xs font-bold tracking-wide flex items-center justify-center gap-2">
+          <i data-lucide="fingerprint" class="w-4 h-4 text-brandTeal"></i>
+          Verify with Passkey / Face ID
+        </button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ========================================================================= -->
+  <!-- 3. DOCTOR PLATFORM CONTAINER -->
+  <!-- ========================================================================= -->
+  <main id="platform-doctor" class="hidden min-h-screen flex flex-col md:flex-row bg-bgDark">
+    
+    <!-- Left Navigation Sidebar -->
+    <aside class="w-full md:w-64 bg-cardDark border-r border-borderDark flex flex-col p-4 shrink-0">
+      <div class="flex items-center gap-3 px-2 py-3 mb-6">
+        <div class="w-8 h-8 rounded-lg bg-brandTeal flex items-center justify-center text-bgDark font-bold text-lg">W</div>
+        <div class="flex flex-col">
+          <span class="text-sm font-bold tracking-tight text-white">Clinical OS</span>
+          <span class="text-[10px] text-brandTeal font-medium">Doctor Workspace</span>
+        </div>
+      </div>
+
+      <!-- Navigation links -->
+      <nav class="space-y-1 flex-1">
+        <button onclick="setDoctorSection('dashboard')" id="nav-doc-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium bg-brandTeal/10 text-brandTeal text-left transition">
+          <i data-lucide="layout-dashboard" class="w-4.5 h-4.5"></i>
+          Dashboard Home
+        </button>
+        <button onclick="setDoctorSection('schedule')" id="nav-doc-schedule" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white text-left transition">
+          <i data-lucide="calendar" class="w-4.5 h-4.5"></i>
+          Schedule calendar
+        </button>
+        <button onclick="setDoctorSection('queue')" id="nav-doc-queue" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white text-left transition">
+          <i data-lucide="users" class="w-4.5 h-4.5"></i>
+          Patient Queue
+          <span class="ml-auto bg-brandTeal text-bgDark text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
+        </button>
+        <button onclick="setDoctorSection('emr')" id="nav-doc-emr" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white text-left transition">
+          <i data-lucide="folder-heart" class="w-4.5 h-4.5"></i>
+          EMR Specialty OS
+        </button>
+        <button onclick="setDoctorSection('telemedicine')" id="nav-doc-telemedicine" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white text-left transition">
+          <i data-lucide="video" class="w-4.5 h-4.5"></i>
+          Telemedicine
+        </button>
+        <button onclick="setDoctorSection('billing')" id="nav-doc-billing" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white text-left transition">
+          <i data-lucide="indian-rupee" class="w-4.5 h-4.5"></i>
+          Billing & Claims
+        </button>
+        <button onclick="setDoctorSection('analytics')" id="nav-doc-analytics" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white text-left transition">
+          <i data-lucide="trending-up" class="w-4.5 h-4.5"></i>
+          Analytics Desk
+        </button>
+      </nav>
+
+      <!-- Active User Profile block -->
+      <div class="border-t border-borderDark pt-4 mt-auto">
+        <div class="flex items-center gap-3 px-2">
+          <div class="w-10 h-10 rounded-full bg-brandTeal/20 flex items-center justify-center text-brandTeal text-sm font-bold">DS</div>
+          <div class="flex flex-col min-w-0">
+            <span class="text-xs font-bold text-white truncate">Dr. Shrikant Verma</span>
+            <span class="text-[10px] text-gray-500 truncate">Cardiology Hub</span>
+          </div>
+          <button onclick="logout()" class="ml-auto p-1 text-gray-400 hover:text-danger transition">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Workspace + Right AI Copilot split -->
+    <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+      
+      <!-- Central workspace -->
+      <div class="flex-1 flex flex-col overflow-y-auto h-screen p-6 custom-scroll">
+        
+        <!-- Top Bar Header info -->
+        <header class="flex items-center justify-between mb-8 pb-4 border-b border-borderDark">
+          <div class="flex items-center gap-2 text-xs text-gray-400">
+            <span>Home</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            <span id="breadcrumb-active" class="text-brandTeal font-medium">Dashboard</span>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <!-- Global Search -->
+            <div class="relative hidden sm:block">
+              <i data-lucide="search" class="absolute left-3.5 top-2.5 w-4 h-4 text-gray-500"></i>
+              <input type="text" placeholder="Search Patient ID..." class="bg-black/30 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-brandTeal w-64">
+            </div>
+
+            <!-- Emergency Bypass Consent Trigger -->
+            <button onclick="triggerEmergencyBypass()" class="px-3.5 py-1.5 rounded-lg bg-danger/15 text-danger border border-danger/30 text-xs font-bold hover:bg-danger/25 transition">
+              Emergency Bypass
+            </button>
+          </div>
+        </header>
+
+        <!-- SUBSECTIONS -->
+
+        <!-- A. DOCTOR DASHBOARD -->
+        <section id="doc-sec-dashboard" class="space-y-6">
+          <div class="grid md:grid-cols-4 gap-4">
+            <!-- Stats -->
+            <div class="glass p-5 rounded-2xl">
+              <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">Patients Today</div>
+              <div class="text-2xl font-bold text-brandTeal">14</div>
+              <div class="text-[10px] text-gray-500 mt-1">4 pending consultation check-in</div>
+            </div>
+            <div class="glass p-5 rounded-2xl">
+              <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">Telemedicine Calls</div>
+              <div class="text-2xl font-bold text-ent">6</div>
+              <div class="text-[10px] text-gray-500 mt-1">3 scheduled sessions left</div>
+            </div>
+            <div class="glass p-5 rounded-2xl">
+              <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">Daily Revenue</div>
+              <div class="text-2xl font-bold text-[#FFD84D]">₹8,450</div>
+              <div class="text-[10px] text-gray-500 mt-1">₹3,000 pending claim collections</div>
+            </div>
+            <div class="glass p-5 rounded-2xl">
+              <div class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">Active EMR Drafts</div>
+              <div class="text-2xl font-bold text-danger">3</div>
+              <div class="text-[10px] text-gray-500 mt-1">Auto-save offline backup OK</div>
+            </div>
+          </div>
+
+          <!-- Appointments and Queue snapshot layout -->
+          <div class="grid md:grid-cols-3 gap-6">
+            <!-- Active Queue -->
+            <div class="md:col-span-2 glass p-6 rounded-3xl">
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold">Checked-In Patient Queue</h3>
+                <span class="text-xs text-brandTeal cursor-pointer" onclick="setDoctorSection('queue')">View Queue Manager &rarr;</span>
+              </div>
+              <div class="space-y-3">
+                <div class="p-4 rounded-2xl bg-black/20 border border-white/5 flex items-center justify-between hover:border-brandTeal/30 transition cursor-pointer" onclick="setActivePatient('p-1', 'Aarav Sharma', 'WYSH-1029')">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-danger/10 text-danger flex items-center justify-center font-bold">AS</div>
+                    <div>
+                      <h4 class="text-sm font-bold text-white">Aarav Sharma</h4>
+                      <p class="text-[11px] text-gray-500">WYSH-1029 • Male, 34 years old</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="px-2 py-0.5 rounded bg-danger/20 text-danger text-[9px] font-bold">CRITICAL</span>
+                    <p class="text-xs text-gray-400 mt-1">Severe Chest Congestion</p>
+                  </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-black/20 border border-white/5 flex items-center justify-between hover:border-brandTeal/30 transition cursor-pointer" onclick="setActivePatient('p-2', 'Priya Patel', 'WYSH-4921')">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-warning/10 text-warning flex items-center justify-center font-bold">PP</div>
+                    <div>
+                      <h4 class="text-sm font-bold text-white">Priya Patel</h4>
+                      <p class="text-[11px] text-gray-500">WYSH-4921 • Female, 28 years old</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="px-2 py-0.5 rounded bg-warning/20 text-warning text-[9px] font-bold">HIGH</span>
+                    <p class="text-xs text-gray-400 mt-1">Dental Root Canal Prep</p>
+                  </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-black/20 border border-white/5 flex items-center justify-between hover:border-brandTeal/30 transition cursor-pointer" onclick="setActivePatient('p-3', 'Rahul Varma', 'WYSH-8732')">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-brandTeal/10 text-brandTeal flex items-center justify-center font-bold">RV</div>
+                    <div>
+                      <h4 class="text-sm font-bold text-white">Rahul Varma</h4>
+                      <p class="text-[11px] text-gray-500">WYSH-8732 • Male, 52 years old</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="px-2 py-0.5 rounded bg-brandTeal/20 text-brandTeal text-[9px] font-bold">NORMAL</span>
+                    <p class="text-xs text-gray-400 mt-1">Ophthalmology Vision check</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Calendar Side card -->
+            <div class="glass p-6 rounded-3xl flex flex-col">
+              <h3 class="text-lg font-bold mb-4">Today's Timeline</h3>
+              <div class="space-y-4 flex-1">
+                <div class="flex gap-3 border-l-2 border-brandTeal pl-3 py-1">
+                  <div>
+                    <span class="text-xs text-brandTeal font-bold">09:30 AM</span>
+                    <h4 class="text-sm font-bold">Consultation Call</h4>
+                    <p class="text-xs text-gray-400">Aarav Sharma</p>
+                  </div>
+                </div>
+                <div class="flex gap-3 border-l-2 border-warning pl-3 py-1">
+                  <div>
+                    <span class="text-xs text-warning font-bold">11:00 AM</span>
+                    <h4 class="text-sm font-bold">Clinic Extraction</h4>
+                    <p class="text-xs text-gray-400">Priya Patel</p>
+                  </div>
+                </div>
+                <div class="flex gap-3 border-l-2 border-ophthal pl-3 py-1">
+                  <div>
+                    <span class="text-xs text-ophthal font-bold">02:30 PM</span>
+                    <h4 class="text-sm font-bold">Retinopathy Review</h4>
+                    <p class="text-xs text-gray-400">Rahul Varma</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- B. SCHEDULE CALENDAR -->
+        <section id="doc-sec-schedule" class="hidden glass p-6 rounded-3xl">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold">Calendar Schedule Planning</h3>
+            <div class="flex items-center gap-2">
+              <button class="px-3 py-1.5 bg-black/40 rounded-lg text-xs hover:bg-black/60 transition">Day</button>
+              <button class="px-3 py-1.5 bg-brandTeal text-bgDark rounded-lg text-xs font-bold">Week</button>
+              <button class="px-3 py-1.5 bg-black/40 rounded-lg text-xs hover:bg-black/60 transition">Month</button>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-7 gap-4 text-center border-b border-borderDark pb-2 mb-4">
+            <span class="text-xs text-gray-500 font-bold">MON 08</span>
+            <span class="text-xs text-gray-500 font-bold">TUE 09</span>
+            <span class="text-xs text-gray-500 font-bold">WED 10</span>
+            <span class="text-xs text-brandTeal font-bold">THU 11 (TODAY)</span>
+            <span class="text-xs text-gray-500 font-bold">FRI 12</span>
+            <span class="text-xs text-gray-500 font-bold">SAT 13</span>
+            <span class="text-xs text-gray-500 font-bold">SUN 14</span>
+          </div>
+
+          <div class="space-y-3">
+            <!-- Simulated grid slots -->
+            <div class="grid grid-cols-7 gap-4 min-h-[100px] border-b border-white/5 py-4">
+              <div class="text-[11px] text-gray-500">09:00 AM</div>
+              <div class="col-span-6 bg-brandTeal/10 border border-brandTeal/20 p-2.5 rounded-xl text-left">
+                <span class="text-xs font-bold text-brandTeal">Clinical Queue Priority Checkin</span>
+                <p class="text-[10px] text-gray-400">Dr. Verma presiding</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-7 gap-4 min-h-[100px] border-b border-white/5 py-4">
+              <div class="text-[11px] text-gray-500">11:30 AM</div>
+              <div class="col-span-2"></div>
+              <div class="col-span-3 bg-ophthal/10 border border-ophthal/20 p-2.5 rounded-xl text-left">
+                <span class="text-xs font-bold text-ophthal">OCT Scans Review session</span>
+                <p class="text-[10px] text-gray-400">Main Lab Hub</p>
+              </div>
+              <div class="col-span-1"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- C. PATIENT QUEUE -->
+        <section id="doc-sec-queue" class="hidden glass p-6 rounded-3xl">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+            <h3 class="text-lg font-bold">Interactive Patient Queue</h3>
+            <div class="flex items-center gap-2">
+              <input type="text" placeholder="Search Queue name..." class="bg-black/30 border border-white/10 rounded-xl px-4 py-1.5 text-xs text-white focus:outline-none focus:border-brandTeal">
+              <select class="bg-black/30 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brandTeal">
+                <option>All Priorities</option>
+                <option>Critical</option>
+                <option>High</option>
+                <option>Normal</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-black/20 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                <tr>
+                  <th class="p-4 rounded-l-xl">Patient Name</th>
+                  <th class="p-4">Queue ID</th>
+                  <th class="p-4">Reason for Visit</th>
+                  <th class="p-4">Priority Badge</th>
+                  <th class="p-4">Sync Status</th>
+                  <th class="p-4 rounded-r-xl">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                <tr>
+                  <td class="p-4 font-bold">Aarav Sharma</td>
+                  <td class="p-4 text-xs text-gray-500">Q-10029</td>
+                  <td class="p-4 text-xs">Severe dry cough and chest tightness</td>
+                  <td class="p-4"><span class="px-2 py-0.5 rounded bg-danger/20 text-danger text-[10px] font-bold">CRITICAL</span></td>
+                  <td class="p-4 text-xs text-brandTeal"><i data-lucide="cloud-lightning" class="inline w-3.5 h-3.5 mr-1"></i> Ready</td>
+                  <td class="p-4"><button onclick="setActivePatient('p-1', 'Aarav Sharma', 'WYSH-1029')" class="px-3 py-1 bg-brandTeal text-bgDark text-xs font-bold rounded-lg hover:opacity-90 transition">Open EMR</button></td>
+                </tr>
+                <tr>
+                  <td class="p-4 font-bold">Priya Patel</td>
+                  <td class="p-4 text-xs text-gray-500">Q-49210</td>
+                  <td class="p-4 text-xs">Root Canal surgery post-op follow-up</td>
+                  <td class="p-4"><span class="px-2 py-0.5 rounded bg-warning/20 text-warning text-[10px] font-bold">HIGH</span></td>
+                  <td class="p-4 text-xs text-brandTeal"><i data-lucide="cloud-lightning" class="inline w-3.5 h-3.5 mr-1"></i> Ready</td>
+                  <td class="p-4"><button onclick="setActivePatient('p-2', 'Priya Patel', 'WYSH-4921')" class="px-3 py-1 bg-brandTeal text-bgDark text-xs font-bold rounded-lg hover:opacity-90 transition">Open EMR</button></td>
+                </tr>
+                <tr>
+                  <td class="p-4 font-bold">Rahul Varma</td>
+                  <td class="p-4 text-xs text-gray-500">Q-87321</td>
+                  <td class="p-4 text-xs">Refraction testing and retina diagnostics</td>
+                  <td class="p-4"><span class="px-2 py-0.5 rounded bg-brandTeal/20 text-brandTeal text-[10px] font-bold">NORMAL</span></td>
+                  <td class="p-4 text-xs text-brandTeal"><i data-lucide="cloud-lightning" class="inline w-3.5 h-3.5 mr-1"></i> Ready</td>
+                  <td class="p-4"><button onclick="setActivePatient('p-3', 'Rahul Varma', 'WYSH-8732')" class="px-3 py-1 bg-brandTeal text-bgDark text-xs font-bold rounded-lg hover:opacity-90 transition">Open EMR</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- D. EMR WORKSPACE -->
+        <section id="doc-sec-emr" class="hidden space-y-6">
+          <!-- Active Patient Context Card -->
+          <div class="glass p-5 rounded-3xl border-2 border-brandTeal/20">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold uppercase tracking-wider text-brandTeal" id="emr-patient-wysh">WYSH-1029</span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-brandTeal"></span>
+                  <span class="text-xs text-gray-400">Gender: M, Age: 34</span>
+                </div>
+                <h3 class="text-2xl font-bold mt-1" id="emr-patient-name">Aarav Sharma</h3>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="text-right">
+                  <span class="text-[10px] text-gray-500 font-bold block uppercase">Allergies</span>
+                  <span class="text-xs text-danger font-semibold">Penicillin (Severe)</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] text-gray-500 font-bold block uppercase">Conditions</span>
+                  <span class="text-xs text-warning font-semibold">Hypertension</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Specialties Selector tabs -->
+          <div class="overflow-x-auto flex gap-2 pb-2 scrollbar-none">
+            <button onclick="setSpecialtyTab('general-medicine')" id="tab-spec-general-medicine" class="px-4 py-2 rounded-xl text-xs font-bold bg-brandTeal text-bgDark whitespace-nowrap transition">General Med</button>
+            <button onclick="setSpecialtyTab('dental')" id="tab-spec-dental" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Dentistry</button>
+            <button onclick="setSpecialtyTab('ent')" id="tab-spec-ent" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">ENT</button>
+            <button onclick="setSpecialtyTab('dermatology')" id="tab-spec-dermatology" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Dermatology</button>
+            <button onclick="setSpecialtyTab('ophthalmology')" id="tab-spec-ophthalmology" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Ophthalmology</button>
+            <button onclick="setSpecialtyTab('cardiology')" id="tab-spec-cardiology" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Cardiology</button>
+            <button onclick="setSpecialtyTab('orthopedics')" id="tab-spec-orthopedics" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Orthopedics</button>
+            <button onclick="setSpecialtyTab('pediatrics')" id="tab-spec-pediatrics" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Pediatrics</button>
+            <button onclick="setSpecialtyTab('gynecology')" id="tab-spec-gynecology" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Gynecology</button>
+            <button onclick="setSpecialtyTab('neurology')" id="tab-spec-neurology" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Neurology</button>
+            <button onclick="setSpecialtyTab('psychiatry')" id="tab-spec-psychiatry" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Psychiatry</button>
+            <button onclick="setSpecialtyTab('gastroenterology')" id="tab-spec-gastroenterology" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">GI</button>
+            <button onclick="setSpecialtyTab('pulmonology')" id="tab-spec-pulmonology" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Pulmonology</button>
+            <button onclick="setSpecialtyTab('urology')" id="tab-spec-urology" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Urology</button>
+            <button onclick="setSpecialtyTab('endocrinology')" id="tab-spec-endocrinology" class="px-4 py-2 rounded-xl text-xs font-bold bg-black/40 text-gray-400 hover:text-white whitespace-nowrap transition">Endocrine</button>
+          </div>
+
+          <!-- SPECIALTY DETAILS SUB-PANELS -->
+
+          <!-- 1. General Medicine -->
+          <div id="spec-panel-general-medicine" class="space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="glass p-5 rounded-2xl">
+                <h4 class="text-sm font-bold text-brandTeal uppercase mb-3">Clinical SOAP Notes</h4>
+                <div class="space-y-3">
+                  <textarea rows="2" placeholder="Subjective..." class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brandTeal"></textarea>
+                  <textarea rows="2" placeholder="Objective..." class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brandTeal"></textarea>
+                  <textarea rows="2" placeholder="Assessment..." class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brandTeal"></textarea>
+                  <textarea rows="2" placeholder="Plan..." class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brandTeal"></textarea>
+                </div>
+              </div>
+
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-brandTeal uppercase mb-3">Prescription Console</h4>
+                  <div class="flex gap-2 mb-3">
+                    <input type="text" id="med-name" placeholder="Drug Name..." class="flex-1 bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brandTeal">
+                    <input type="text" id="med-dose" placeholder="Dose (e.g. 1-0-1)..." class="w-24 bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brandTeal">
+                    <button onclick="addPrescriptionItem()" class="px-4 py-2 bg-brandTeal text-bgDark text-xs font-bold rounded-xl hover:opacity-90 transition">Add</button>
+                  </div>
+                  <ul id="prescribed-list" class="space-y-1.5 text-xs text-gray-400">
+                    <li class="flex justify-between items-center bg-black/10 px-3 py-2 rounded-lg">
+                      <span>Metformin 500mg (1-0-1)</span>
+                      <button onclick="this.parentNode.remove()" class="text-danger hover:text-white">&times;</button>
+                    </li>
+                  </ul>
+                </div>
+                
+                <button onclick="saveEncounter()" class="w-full py-3 mt-4 rounded-xl bg-brandTeal text-bgDark font-bold text-xs hover:opacity-90 transition">
+                  Save & Sync Clinical EMR
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Dental Workspace -->
+          <div id="spec-panel-dental" class="hidden space-y-4">
+            <div class="glass p-5 rounded-2xl">
+              <h4 class="text-sm font-bold text-dental uppercase mb-4">FDI Tooth Chart (32 Teeth)</h4>
+              
+              <!-- Upper Arch -->
+              <div class="mb-6 text-center">
+                <span class="text-[10px] text-gray-500 font-bold block uppercase mb-2">Upper Maxillary Arch</span>
+                <div class="flex gap-1 justify-center overflow-x-auto py-2">
+                  <!-- Teeth 18 to 28 -->
+                  <button onclick="selectTooth(18)" id="tooth-18" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>18</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(17)" id="tooth-17" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>17</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(16)" id="tooth-16" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>16</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(15)" id="tooth-15" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>15</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(14)" id="tooth-14" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>14</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(13)" id="tooth-13" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>13</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(12)" id="tooth-12" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>12</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(11)" id="tooth-11" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>11</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <div class="w-1 border-r border-white/10 mx-1"></div>
+                  <button onclick="selectTooth(21)" id="tooth-21" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>21</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(22)" id="tooth-22" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>22</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(23)" id="tooth-23" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>23</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(24)" id="tooth-24" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>24</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(25)" id="tooth-25" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>25</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(26)" id="tooth-26" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>26</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(27)" id="tooth-27" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>27</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(28)" id="tooth-28" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>28</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Lower Arch -->
+              <div class="text-center">
+                <span class="text-[10px] text-gray-500 font-bold block uppercase mb-2">Lower Mandibular Arch</span>
+                <div class="flex gap-1 justify-center overflow-x-auto py-2">
+                  <!-- Teeth 48 to 38 -->
+                  <button onclick="selectTooth(48)" id="tooth-48" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>48</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(47)" id="tooth-47" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>47</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(46)" id="tooth-46" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>46</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(45)" id="tooth-45" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>45</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(44)" id="tooth-44" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>44</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(43)" id="tooth-43" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>43</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(42)" id="tooth-42" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>42</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(41)" id="tooth-41" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>41</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <div class="w-1 border-r border-white/10 mx-1"></div>
+                  <button onclick="selectTooth(31)" id="tooth-31" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>31</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(32)" id="tooth-32" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>32</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(33)" id="tooth-33" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>33</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(34)" id="tooth-34" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>34</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(35)" id="tooth-35" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>35</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(36)" id="tooth-36" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>36</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(37)" id="tooth-37" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>37</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                  <button onclick="selectTooth(38)" id="tooth-38" class="tooth-btn w-9 h-12 bg-black/40 border border-white/10 rounded-lg text-xs font-bold flex flex-col items-center justify-between p-1 hover:border-dental transition">
+                    <span>38</span><span class="w-2.5 h-2.5 rounded-full bg-brandTeal"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Condition Selection card -->
+            <div id="dental-condition-box" class="glass p-5 rounded-2xl hidden">
+              <h4 class="text-sm font-bold text-white mb-3">Diagnose Selected Tooth</h4>
+              <div class="flex gap-2">
+                <button onclick="setToothCondition('DECAYED')" class="px-4 py-2 bg-derm text-white text-xs font-bold rounded-lg hover:opacity-90 transition">Decayed</button>
+                <button onclick="setToothCondition('FILLED')" class="px-4 py-2 bg-ent text-bgDark text-xs font-bold rounded-lg hover:opacity-90 transition">Filled</button>
+                <button onclick="setToothCondition('MISSING')" class="px-4 py-2 bg-gray-500 text-white text-xs font-bold rounded-lg hover:opacity-90 transition">Missing</button>
+                <button onclick="setToothCondition('CROWN')" class="px-4 py-2 bg-dental text-bgDark text-xs font-bold rounded-lg hover:opacity-90 transition">Crown</button>
+                <button onclick="setToothCondition('HEALTHY')" class="px-4 py-2 bg-brandTeal text-bgDark text-xs font-bold rounded-lg hover:opacity-90 transition">Healthy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. ENT Workspace -->
+          <div id="spec-panel-ent" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Organ Select -->
+              <div class="glass p-5 rounded-2xl text-center">
+                <h4 class="text-sm font-bold text-ent uppercase mb-4">Anatomical Region Selector</h4>
+                
+                <!-- Mock Graphic -->
+                <div class="w-full h-48 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center relative mb-4">
+                  <div class="absolute top-1/4 w-12 h-12 rounded-full border border-ent/40 flex items-center justify-center text-[10px] font-bold text-ent cursor-pointer hover:bg-ent/15 transition" onclick="selectEntOrgan('Ears')">Ears</div>
+                  <div class="absolute top-1/2 w-12 h-12 rounded-full border border-ent/40 flex items-center justify-center text-[10px] font-bold text-ent cursor-pointer hover:bg-ent/15 transition" onclick="selectEntOrgan('Nose')">Nose</div>
+                  <div class="absolute bottom-6 w-12 h-12 rounded-full border border-ent/40 flex items-center justify-center text-[10px] font-bold text-ent cursor-pointer hover:bg-ent/15 transition" onclick="selectEntOrgan('Throat')">Throat</div>
+                </div>
+
+                <div class="text-xs text-gray-400" id="ent-organ-selected">Selected Organ: Ears</div>
+              </div>
+
+              <!-- Audiogram Sliders -->
+              <div class="glass p-5 rounded-2xl">
+                <h4 class="text-sm font-bold text-ent uppercase mb-4">Hearing Threshold Assessment</h4>
+                <div class="space-y-4">
+                  <div>
+                    <label class="flex justify-between text-xs mb-1">
+                      <span>Left Ear Threshold</span>
+                      <span id="label-left-hearing" class="text-brandTeal font-bold">20 dB</span>
+                    </label>
+                    <input type="range" min="0" max="100" value="20" class="w-full accent-brandTeal" oninput="updateHearing('left', this.value)">
+                  </div>
+
+                  <div>
+                    <label class="flex justify-between text-xs mb-1">
+                      <span>Right Ear Threshold</span>
+                      <span id="label-right-hearing" class="text-brandTeal font-bold">20 dB</span>
+                    </label>
+                    <input type="range" min="0" max="100" value="20" class="w-full accent-brandTeal" oninput="updateHearing('right', this.value)">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Dermatology Workspace -->
+          <div id="spec-panel-dermatology" class="hidden space-y-4">
+            <div class="glass p-5 rounded-2xl">
+              <h4 class="text-sm font-bold text-derm uppercase mb-3">Body Map Region Pin Placement</h4>
+              <p class="text-xs text-gray-400 mb-4">Click inside the bounds below to place lesion tracking pins</p>
+              
+              <div class="relative w-full h-64 bg-black/40 border border-white/10 rounded-2xl flex items-center justify-center overflow-hidden cursor-crosshair" id="derm-canvas" onclick="dropLesionPin(event)">
+                <!-- Simulated Body Outline -->
+                <i data-lucide="accessibility" class="w-40 h-40 text-white/5 absolute"></i>
+                <div id="derm-pins-container" class="absolute inset-0"></div>
+              </div>
+              
+              <div id="derm-pin-detail" class="mt-4 p-4 rounded-xl bg-black/20 border border-white/5 hidden">
+                <h5 class="text-xs font-bold text-white mb-2">Add Lesion Data</h5>
+                <div class="flex gap-2">
+                  <input type="text" id="derm-lesion-desc" placeholder="Size, border description..." class="flex-1 bg-black/30 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white">
+                  <button onclick="saveLesionPin()" class="px-4 py-1.5 bg-brandTeal text-bgDark text-xs font-bold rounded-lg hover:opacity-90">Save Pin</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. Ophthalmology Workspace -->
+          <div id="spec-panel-ophthalmology" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Refraction OD/OS -->
+              <div class="glass p-5 rounded-2xl">
+                <h4 class="text-sm font-bold text-ophthal uppercase mb-4">Refraction Data Registry</h4>
+                <div class="space-y-4 text-xs">
+                  <div>
+                    <h5 class="font-bold text-brandTeal mb-2">Right Eye (OD)</h5>
+                    <div class="grid grid-cols-3 gap-2">
+                      <input type="text" placeholder="SPH (e.g. -2.25)" class="bg-black/30 border border-white/10 rounded-lg px-2 py-1 focus:outline-none text-white">
+                      <input type="text" placeholder="CYL (e.g. -0.50)" class="bg-black/30 border border-white/10 rounded-lg px-2 py-1 focus:outline-none text-white">
+                      <input type="text" placeholder="Axis (e.g. 90)" class="bg-black/30 border border-white/10 rounded-lg px-2 py-1 focus:outline-none text-white">
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h5 class="font-bold text-brandTeal mb-2">Left Eye (OS)</h5>
+                    <div class="grid grid-cols-3 gap-2">
+                      <input type="text" placeholder="SPH" class="bg-black/30 border border-white/10 rounded-lg px-2 py-1 focus:outline-none text-white">
+                      <input type="text" placeholder="CYL" class="bg-black/30 border border-white/10 rounded-lg px-2 py-1 focus:outline-none text-white">
+                      <input type="text" placeholder="Axis" class="bg-black/30 border border-white/10 rounded-lg px-2 py-1 focus:outline-none text-white">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- IOP Gauges -->
+              <div class="glass p-5 rounded-2xl">
+                <h4 class="text-sm font-bold text-ophthal uppercase mb-4">Intraocular Pressure (IOP) Gauge</h4>
+                <div class="space-y-4">
+                  <div>
+                    <label class="flex justify-between text-xs mb-1">
+                      <span>Right Eye IOP</span>
+                      <span id="label-od-iop" class="text-brandTeal font-bold">15 mmHg</span>
+                    </label>
+                    <input type="range" min="5" max="30" value="15" class="w-full accent-brandTeal" oninput="document.getElementById('label-od-iop').innerText = this.value + ' mmHg'">
+                  </div>
+
+                  <div>
+                    <label class="flex justify-between text-xs mb-1">
+                      <span>Left Eye IOP</span>
+                      <span id="label-os-iop" class="text-brandTeal font-bold">16 mmHg</span>
+                    </label>
+                    <input type="range" min="5" max="30" value="16" class="w-full accent-brandTeal" oninput="document.getElementById('label-os-iop').innerText = this.value + ' mmHg'">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. Cardiology Workspace -->
+          <div id="spec-panel-cardiology" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- ECG canvas visualizer -->
+              <div class="glass p-5 rounded-2xl">
+                <h4 class="text-sm font-bold text-danger uppercase mb-3 flex items-center gap-1.5">
+                  <i data-lucide="heart" class="w-4 h-4 text-danger animate-pulse"></i> Real-time ECG Waveform Monitor
+                </h4>
+                <div class="relative w-full bg-black/60 rounded-xl p-2 border border-white/5 overflow-hidden">
+                  <canvas id="ecg-canvas" class="w-full h-40 block bg-[#0B0D10]"></canvas>
+                </div>
+                <div class="flex items-center justify-between mt-3 text-xs text-gray-400">
+                  <span>Heart Rate (BPM): <strong id="val-cardio-bpm" class="text-danger">75</strong></span>
+                  <span>Rhythm: <strong id="val-cardio-rhythm" class="text-danger">Sinus Rhythm</strong></span>
+                </div>
+              </div>
+              <!-- Cardiology Clinical Controls & Risk -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-danger uppercase mb-3">ECG & Vitals Simulator</h4>
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-xs text-gray-400 mb-1">Simulated Heart Rate</label>
+                      <input type="range" min="40" max="180" value="75" class="w-full accent-danger" id="slider-cardio-bpm" oninput="updateEcgParams()">
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-400 mb-1">Cardiac Rhythm Selection</label>
+                      <select id="select-cardio-rhythm" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-danger" onchange="updateEcgParams()">
+                        <option value="sinus">Normal Sinus Rhythm (NSR)</option>
+                        <option value="afib">Atrial Fibrillation (AFib)</option>
+                        <option value="vtach">Ventricular Tachycardia (VTach)</option>
+                        <option value="brady">Sinus Bradycardia</option>
+                      </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="block text-[10px] text-gray-400 mb-1">BP Systolic (mmHg)</label>
+                        <input type="number" value="120" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white" id="cardio-bp-sys" oninput="calculateCardiacRisk()">
+                      </div>
+                      <div>
+                        <label class="block text-[10px] text-gray-400 mb-1">BP Diastolic (mmHg)</label>
+                        <input type="number" value="80" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white" id="cardio-bp-dia" oninput="calculateCardiacRisk()">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-4 p-3 rounded-xl bg-danger/5 border border-danger/20 flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">ASCVD Cardiac Risk (10-Yr):</span>
+                  <span id="label-cardio-risk" class="text-sm font-bold text-emerald-400">1.2% (Low)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7. Orthopedics Workspace -->
+          <div id="spec-panel-orthopedics" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Joint SVG Anatomy selector -->
+              <div class="glass p-5 rounded-2xl text-center">
+                <h4 class="text-sm font-bold text-orange-400 uppercase mb-3">Skeletal Joint Selector</h4>
+                <div class="w-full h-48 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center relative mb-4">
+                  <!-- Skeletal SVG mapping nodes -->
+                  <svg viewBox="0 0 100 120" class="w-full h-full max-h-40 text-gray-600">
+                    <circle cx="50" cy="15" r="8" fill="currentColor" opacity="0.3"></circle>
+                    <line x1="50" y1="23" x2="50" y2="70" stroke="currentColor" stroke-width="2" opacity="0.3"></line>
+                    <!-- Arms -->
+                    <line x1="50" y1="30" x2="25" y2="45" stroke="currentColor" stroke-width="2" opacity="0.3"></line>
+                    <line x1="25" y1="45" x2="10" y2="60" stroke="currentColor" stroke-width="2" opacity="0.3"></line>
+                    <line x1="50" y1="30" x2="75" y2="45" stroke="currentColor" stroke-width="2" opacity="0.3"></line>
+                    <line x1="75" y1="45" x2="90" y2="60" stroke="currentColor" stroke-width="2" opacity="0.3"></line>
+                    <!-- Legs -->
+                    <line x1="50" y1="70" x2="35" y2="95" stroke="currentColor" stroke-width="2" opacity="0.3"></line>
+                    <line x1="35" y1="95" x2="25" y2="115" stroke="currentColor" stroke-width="2" opacity="0.3"></line>
+                    <line x1="50" y1="70" x2="65" y2="95" stroke="currentColor" stroke-width="2" opacity="0.3"></line>
+                    <line x1="65" y1="95" x2="75" y2="115" stroke="currentColor" stroke-width="2" opacity="0.3"></line>
+                    
+                    <!-- Joint Clickable Points -->
+                    <circle cx="35" cy="95" r="5" class="cursor-pointer fill-orange-500 hover:fill-orange-400 transition" id="joint-node-knee-l" onclick="selectJoint('Left Knee')"></circle>
+                    <circle cx="65" cy="95" r="5" class="cursor-pointer fill-orange-500 hover:fill-orange-400 transition" id="joint-node-knee-r" onclick="selectJoint('Right Knee')"></circle>
+                    <circle cx="25" cy="30" r="5" class="cursor-pointer fill-orange-500 hover:fill-orange-400 transition" id="joint-node-shoulder-l" onclick="selectJoint('Left Shoulder')"></circle>
+                    <circle cx="75" cy="30" r="5" class="cursor-pointer fill-orange-500 hover:fill-orange-400 transition" id="joint-node-shoulder-r" onclick="selectJoint('Right Shoulder')"></circle>
+                    <circle cx="50" cy="50" r="4" class="cursor-pointer fill-orange-500 hover:fill-orange-400 transition" id="joint-node-spine" onclick="selectJoint('Lumbar Spine')"></circle>
+                  </svg>
+                </div>
+                <div class="text-xs text-gray-400 font-bold" id="ortho-joint-selected">Active Joint: Left Knee</div>
+              </div>
+              
+              <!-- Joint Range of Motion Parameters -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-orange-400 uppercase mb-3">Range of Motion (ROM) & Pain</h4>
+                  <div class="space-y-4">
+                    <div>
+                      <div class="flex justify-between text-xs mb-1">
+                        <span>Flexion Angle</span>
+                        <span id="label-ortho-flex" class="text-orange-400 font-bold">120&deg;</span>
+                      </div>
+                      <input type="range" min="0" max="180" value="120" class="w-full accent-orange-400" id="slider-ortho-flex" oninput="updateJointROM()">
+                    </div>
+                    <div>
+                      <div class="flex justify-between text-xs mb-1">
+                        <span>Extension Angle</span>
+                        <span id="label-ortho-ext" class="text-orange-400 font-bold">0&deg;</span>
+                      </div>
+                      <input type="range" min="-15" max="45" value="0" class="w-full accent-orange-400" id="slider-ortho-ext" oninput="updateJointROM()">
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-400 mb-1">Joint Pain Level (VAS)</label>
+                      <div class="flex gap-2">
+                        <button onclick="setJointPain(1)" class="flex-1 py-1 bg-black/40 hover:bg-orange-500/20 text-xs font-bold rounded-lg border border-white/10" id="btn-pain-1">Mild</button>
+                        <button onclick="setJointPain(5)" class="flex-1 py-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 text-xs font-bold rounded-lg" id="btn-pain-5">Mod</button>
+                        <button onclick="setJointPain(8)" class="flex-1 py-1 bg-black/40 hover:bg-orange-500/20 text-xs font-bold rounded-lg border border-white/10" id="btn-pain-8">Sev</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <button onclick="saveJointEncounter()" class="w-full py-2.5 mt-4 rounded-xl bg-orange-400 text-bgDark font-bold text-xs hover:opacity-90 transition">
+                  Sync Joint Dynamics
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 8. Pediatrics Workspace -->
+          <div id="spec-panel-pediatrics" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Growth chart plotter -->
+              <div class="glass p-5 rounded-2xl">
+                <h4 class="text-sm font-bold text-yellow-400 uppercase mb-3">Pediatric Growth Chart (WHO)</h4>
+                <div class="relative w-full bg-black/60 rounded-xl p-2 border border-white/5 overflow-hidden">
+                  <canvas id="growth-canvas" class="w-full h-40 block bg-[#0B0D10]" onclick="plotGrowthPoint(event)"></canvas>
+                </div>
+                <div class="text-[10px] text-gray-400 mt-2 text-center">Click grid bounds to log height/weight coordinates.</div>
+              </div>
+              
+              <!-- Growth metrics inputs & Vaccine checklist -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-yellow-400 uppercase mb-3">Immunization Tracking Ledger</h4>
+                  <div class="space-y-2 text-xs">
+                    <label class="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-white/5">
+                      <span>BCG (Tuberculosis Vaccine)</span>
+                      <select class="bg-black/40 border border-white/10 rounded-lg px-2 py-0.5 text-xs text-yellow-400" onchange="updateVaccine(this, 'BCG')">
+                        <option value="pending">Pending</option>
+                        <option value="done" selected>Administered</option>
+                        <option value="overdue">Overdue</option>
+                      </select>
+                    </label>
+                    <label class="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-white/5">
+                      <span>Hepatitis B (HepB)</span>
+                      <select class="bg-black/40 border border-white/10 rounded-lg px-2 py-0.5 text-xs text-yellow-400" onchange="updateVaccine(this, 'HepB')">
+                        <option value="pending">Pending</option>
+                        <option value="done" selected>Administered</option>
+                        <option value="overdue">Overdue</option>
+                      </select>
+                    </label>
+                    <label class="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-white/5">
+                      <span>DTaP (Diptheria, Tetanus, Pertussis)</span>
+                      <select class="bg-black/40 border border-white/10 rounded-lg px-2 py-0.5 text-xs text-yellow-400" onchange="updateVaccine(this, 'DTaP')">
+                        <option value="pending" selected>Pending</option>
+                        <option value="done">Administered</option>
+                        <option value="overdue">Overdue</option>
+                      </select>
+                    </label>
+                    <label class="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-white/5">
+                      <span>MMR (Measles, Mumps, Rubella)</span>
+                      <select class="bg-black/40 border border-white/10 rounded-lg px-2 py-0.5 text-xs text-yellow-400" onchange="updateVaccine(this, 'MMR')">
+                        <option value="pending">Pending</option>
+                        <option value="done">Administered</option>
+                        <option value="overdue" selected>Overdue</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="mt-4 flex gap-2">
+                  <div class="flex-1">
+                    <span class="text-[9px] text-gray-500 block uppercase">Weight Percentile</span>
+                    <strong class="text-xs text-yellow-400" id="label-ped-weight-pct">54th Percentile</strong>
+                  </div>
+                  <div class="flex-1">
+                    <span class="text-[9px] text-gray-500 block uppercase">Height Percentile</span>
+                    <strong class="text-xs text-yellow-400" id="label-ped-height-pct">62nd Percentile</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 9. Gynecology Workspace -->
+          <div id="spec-panel-gynecology" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Pregnancy timeline / Gestation progress tracker -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-pink-400 uppercase mb-3 flex items-center gap-1.5">
+                    <i data-lucide="baby" class="w-4 h-4 text-pink-400"></i> Gestational Progression Tracker
+                  </h4>
+                  <div class="space-y-4 mt-2">
+                    <div>
+                      <div class="flex justify-between text-xs mb-1">
+                        <span>Weeks of Gestation</span>
+                        <span id="label-gyn-weeks" class="text-pink-400 font-bold">14 Weeks</span>
+                      </div>
+                      <input type="range" min="1" max="40" value="14" class="w-full accent-pink-400" id="slider-gyn-weeks" oninput="updateGestationWeeks(this.value)">
+                    </div>
+                    
+                    <div class="p-3 bg-black/40 rounded-xl border border-white/5 text-xs text-gray-400">
+                      <span class="font-bold text-white block uppercase text-[10px] tracking-wide mb-1">Simulated Fetal Phase</span>
+                      <span id="gyn-pregnancy-phase">Second Trimester. Organs forming. Active kicks simulated.</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 mt-4">
+                  <div class="p-2.5 rounded-xl bg-black/20 border border-white/5">
+                    <label class="block text-[9px] text-gray-500 uppercase">Fetal Heart Rate</label>
+                    <span class="text-xs font-bold text-pink-400" id="gyn-fhr-label">148 BPM</span>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-black/20 border border-white/5">
+                    <label class="block text-[9px] text-gray-500 uppercase">Fundal Height</label>
+                    <span class="text-xs font-bold text-pink-400" id="gyn-fh-label">14 cm</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- OB/GYN Menstrual & Vitals -->
+              <div class="glass p-5 rounded-2xl space-y-4">
+                <h4 class="text-sm font-bold text-pink-400 uppercase">Maternal Risk Assessment</h4>
+                <div class="space-y-2 text-xs">
+                  <label class="flex items-center gap-2 cursor-pointer py-1 border-b border-white/5">
+                    <input type="checkbox" id="gyn-opt-edema" class="rounded border-white/10 bg-black/40 text-pink-400" onchange="updateMaternalRisk()">
+                    <span>Severe Limb Edema</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer py-1 border-b border-white/5">
+                    <input type="checkbox" id="gyn-opt-protein" class="rounded border-white/10 bg-black/40 text-pink-400" onchange="updateMaternalRisk()">
+                    <span>Protein in Urine (Dipstick &gt; 1+)</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer py-1 border-b border-white/5">
+                    <input type="checkbox" id="gyn-opt-headache" class="rounded border-white/10 bg-black/40 text-pink-400" onchange="updateMaternalRisk()">
+                    <span>Severe Persistent Headache / Visual disturbances</span>
+                  </label>
+                </div>
+                
+                <div class="p-3 rounded-xl bg-pink-500/5 border border-pink-500/20 text-xs">
+                  <div class="flex justify-between font-bold">
+                    <span>Preeclampsia Alert Risk:</span>
+                    <span id="gyn-risk-status" class="text-emerald-400">Normal Progression</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 10. Neurology Workspace -->
+          <div id="spec-panel-neurology" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Reflex mannequin diagram mapping -->
+              <div class="glass p-5 rounded-2xl text-center">
+                <h4 class="text-sm font-bold text-indigo-400 uppercase mb-3">Deep Tendon Reflexes (DTR)</h4>
+                <div class="w-full h-48 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center relative mb-4">
+                  <!-- Human Reflex Nodes diagram -->
+                  <i data-lucide="accessibility" class="w-32 h-32 text-white/5 absolute"></i>
+                  <!-- Hotspot points mapping knees, elbows, ankles -->
+                  <button onclick="selectReflexNode('Biceps')" class="absolute top-[28%] left-[30%] w-6 h-6 rounded-full border border-indigo-500/50 hover:bg-indigo-500/20 flex items-center justify-center text-[8px] font-bold text-indigo-300">Bi</button>
+                  <button onclick="selectReflexNode('Triceps')" class="absolute top-[28%] right-[30%] w-6 h-6 rounded-full border border-indigo-500/50 hover:bg-indigo-500/20 flex items-center justify-center text-[8px] font-bold text-indigo-300">Tri</button>
+                  <button onclick="selectReflexNode('Patellar')" class="absolute bottom-[28%] left-[32%] w-6 h-6 rounded-full border border-indigo-500/50 hover:bg-indigo-500/20 flex items-center justify-center text-[8px] font-bold text-indigo-300">Pat</button>
+                  <button onclick="selectReflexNode('Achilles')" class="absolute bottom-[10%] right-[32%] w-6 h-6 rounded-full border border-indigo-500/50 hover:bg-indigo-500/20 flex items-center justify-center text-[8px] font-bold text-indigo-300">Ach</button>
+                </div>
+                <div class="text-xs text-gray-400 font-bold" id="neu-reflex-selected">Reflex Joint: Patellar</div>
+              </div>
+              
+              <!-- Reflex metrics & GCS calculator -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-indigo-400 uppercase mb-3">Score Grids</h4>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between text-xs">
+                      <span>Reflex Score:</span>
+                      <select id="select-reflex-score" class="bg-black/40 border border-white/10 rounded-lg px-2 py-1 text-xs text-indigo-300" onchange="updateReflexVal()">
+                        <option value="0">0 (Absent)</option>
+                        <option value="1">1+ (Hypoactive)</option>
+                        <option value="2" selected>2+ (Normal)</option>
+                        <option value="3">3+ (Hyperactive)</option>
+                        <option value="4">4+ (Clonus / Hyperreflexia)</option>
+                      </select>
+                    </div>
+                    
+                    <div class="border-t border-white/5 pt-3">
+                      <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-2">Glasgow Coma Scale (GCS)</span>
+                      <div class="grid grid-cols-3 gap-1 text-xs">
+                        <div>
+                          <label class="block text-[9px] text-gray-400">Eye Opening</label>
+                          <select id="gcs-eye" class="w-full bg-black/40 border border-white/10 rounded-lg p-1 text-[10px] text-white" onchange="calcGcs()">
+                            <option value="4">4 (Spontaneous)</option>
+                            <option value="3">3 (To Sound)</option>
+                            <option value="2">2 (To Pain)</option>
+                            <option value="1">1 (None)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="block text-[9px] text-gray-400">Verbal</label>
+                          <select id="gcs-verbal" class="w-full bg-black/40 border border-white/10 rounded-lg p-1 text-[10px] text-white" onchange="calcGcs()">
+                            <option value="5">5 (Oriented)</option>
+                            <option value="4">4 (Confused)</option>
+                            <option value="3">3 (Inappropriate)</option>
+                            <option value="2">2 (Incomprehensible)</option>
+                            <option value="1">1 (None)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="block text-[9px] text-gray-400">Motor</label>
+                          <select id="gcs-motor" class="w-full bg-black/40 border border-white/10 rounded-lg p-1 text-[10px] text-white" onchange="calcGcs()">
+                            <option value="6">6 (Obeys Command)</option>
+                            <option value="5">5 (Localizes Pain)</option>
+                            <option value="4">4 (Withdraws)</option>
+                            <option value="3">3 (Flexion decorticate)</option>
+                            <option value="2">2 (Extension decerebrate)</option>
+                            <option value="1">1 (None)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-4 p-3 rounded-xl bg-indigo-500/5 border border-indigo-500/20 flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">Calculated GCS Total Score:</span>
+                  <span id="gcs-total" class="text-sm font-bold text-emerald-400">15 / 15 (Normal)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 11. Psychiatry Workspace -->
+          <div id="spec-panel-psychiatry" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- MSE Selection blocks -->
+              <div class="glass p-5 rounded-2xl">
+                <h4 class="text-sm font-bold text-sky-400 uppercase mb-3">Mental Status Examination (MSE)</h4>
+                <div class="space-y-3 text-xs">
+                  <div>
+                    <label class="block text-[10px] text-gray-500 uppercase mb-1">Speech & Vocalization</label>
+                    <div class="flex flex-wrap gap-1">
+                      <button onclick="toggleMseWord(this, 'speech')" class="px-2 py-1 bg-black/40 hover:bg-sky-500/20 text-[10px] rounded-lg border border-white/10">Rapid</button>
+                      <button onclick="toggleMseWord(this, 'speech')" class="px-2 py-1 bg-black/40 hover:bg-sky-500/20 text-[10px] rounded-lg border border-white/10">Monotone</button>
+                      <button onclick="toggleMseWord(this, 'speech')" class="px-2 py-1 bg-sky-500/20 text-sky-300 text-[10px] rounded-lg border border-sky-500/30">Normal Rate</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] text-gray-500 uppercase mb-1">Affective State</label>
+                    <div class="flex flex-wrap gap-1">
+                      <button onclick="toggleMseWord(this, 'affect')" class="px-2 py-1 bg-black/40 hover:bg-sky-500/20 text-[10px] rounded-lg border border-white/10">Flat</button>
+                      <button onclick="toggleMseWord(this, 'affect')" class="px-2 py-1 bg-black/40 hover:bg-sky-500/20 text-[10px] rounded-lg border border-white/10">Blunted</button>
+                      <button onclick="toggleMseWord(this, 'affect')" class="px-2 py-1 bg-black/40 hover:bg-sky-500/20 text-[10px] rounded-lg border border-white/10">Labile</button>
+                      <button onclick="toggleMseWord(this, 'affect')" class="px-2 py-1 bg-sky-500/20 text-sky-300 text-[10px] rounded-lg border border-sky-500/30">Congruent</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] text-gray-500 uppercase mb-1">Thought Process</label>
+                    <div class="flex flex-wrap gap-1">
+                      <button onclick="toggleMseWord(this, 'thought')" class="px-2 py-1 bg-black/40 hover:bg-sky-500/20 text-[10px] rounded-lg border border-white/10">Tangential</button>
+                      <button onclick="toggleMseWord(this, 'thought')" class="px-2 py-1 bg-black/40 hover:bg-sky-500/20 text-[10px] rounded-lg border border-white/10">Circumstantial</button>
+                      <button onclick="toggleMseWord(this, 'thought')" class="px-2 py-1 bg-sky-500/20 text-sky-300 text-[10px] rounded-lg border border-sky-500/30">Coherent</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- PHQ-9 Depression Screener -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-sky-400 uppercase mb-3">Depression Severity (PHQ-9)</h4>
+                  <div class="space-y-3 text-[11px] text-gray-400">
+                    <div>
+                      <p class="mb-1">1. Little interest or pleasure in doing things?</p>
+                      <div class="flex gap-1">
+                        <button onclick="setPhqScore(1, 0)" class="btn-phq-1-0 flex-1 py-1 bg-sky-500/20 border border-sky-500/30 text-sky-300 rounded">Not at all</button>
+                        <button onclick="setPhqScore(1, 1)" class="btn-phq-1-1 flex-1 py-1 bg-black/40 border border-white/10 rounded">Several days</button>
+                        <button onclick="setPhqScore(1, 2)" class="btn-phq-1-2 flex-1 py-1 bg-black/40 border border-white/10 rounded">Half the days</button>
+                        <button onclick="setPhqScore(1, 3)" class="btn-phq-1-3 flex-1 py-1 bg-black/40 border border-white/10 rounded">Nearly daily</button>
+                      </div>
+                    </div>
+                    <div>
+                      <p class="mb-1">2. Feeling down, depressed, or hopeless?</p>
+                      <div class="flex gap-1">
+                        <button onclick="setPhqScore(2, 0)" class="btn-phq-2-0 flex-1 py-1 bg-sky-500/20 border border-sky-500/30 text-sky-300 rounded">Not at all</button>
+                        <button onclick="setPhqScore(2, 1)" class="btn-phq-2-1 flex-1 py-1 bg-black/40 border border-white/10 rounded">Several days</button>
+                        <button onclick="setPhqScore(2, 2)" class="btn-phq-2-2 flex-1 py-1 bg-black/40 border border-white/10 rounded">Half the days</button>
+                        <button onclick="setPhqScore(2, 3)" class="btn-phq-2-3 flex-1 py-1 bg-black/40 border border-white/10 rounded">Nearly daily</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-4 p-3 rounded-xl bg-sky-500/5 border border-sky-500/20 flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">PHQ-9 Index Score:</span>
+                  <span id="label-phq-total" class="text-xs font-bold text-emerald-400">0 (Minimal Depression)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 12. Gastroenterology Workspace -->
+          <div id="spec-panel-gastroenterology" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Clickable abdominal 9-quadrant diagram -->
+              <div class="glass p-5 rounded-2xl text-center">
+                <h4 class="text-sm font-bold uppercase mb-3 text-orange-400">Abdominal 9-Quadrant Mapping</h4>
+                <div class="grid grid-cols-3 gap-1 w-full max-w-[210px] mx-auto bg-black/30 p-2 rounded-xl border border-white/5 text-[10px]">
+                  <button id="quad-1" onclick="selectAbdomenQuad(1, 'Right Hypochondriac')" class="h-12 bg-black/40 border border-white/10 rounded hover:border-orange-400 transition flex flex-col justify-center items-center">
+                    <span>RHC</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1" id="quad-dot-1"></span>
+                  </button>
+                  <button id="quad-2" onclick="selectAbdomenQuad(2, 'Epigastric')" class="h-12 bg-black/40 border border-white/10 rounded hover:border-orange-400 transition flex flex-col justify-center items-center">
+                    <span>EPI</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1" id="quad-dot-2"></span>
+                  </button>
+                  <button id="quad-3" onclick="selectAbdomenQuad(3, 'Left Hypochondriac')" class="h-12 bg-black/40 border border-white/10 rounded hover:border-orange-400 transition flex flex-col justify-center items-center">
+                    <span>LHC</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1" id="quad-dot-3"></span>
+                  </button>
+                  <button id="quad-4" onclick="selectAbdomenQuad(4, 'Right Lumbar')" class="h-12 bg-black/40 border border-white/10 rounded hover:border-orange-400 transition flex flex-col justify-center items-center">
+                    <span>RL</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1" id="quad-dot-4"></span>
+                  </button>
+                  <button id="quad-5" onclick="selectAbdomenQuad(5, 'Umbilical')" class="h-12 bg-black/40 border border-white/10 rounded hover:border-orange-400 transition flex flex-col justify-center items-center">
+                    <span>UMB</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1" id="quad-dot-5"></span>
+                  </button>
+                  <button id="quad-6" onclick="selectAbdomenQuad(6, 'Left Lumbar')" class="h-12 bg-black/40 border border-white/10 rounded hover:border-orange-400 transition flex flex-col justify-center items-center">
+                    <span>LL</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1" id="quad-dot-6"></span>
+                  </button>
+                  <button id="quad-7" onclick="selectAbdomenQuad(7, 'Right Iliac')" class="h-12 bg-black/40 border border-white/10 rounded hover:border-orange-400 transition flex flex-col justify-center items-center">
+                    <span>RI</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1" id="quad-dot-7"></span>
+                  </button>
+                  <button id="quad-8" onclick="selectAbdomenQuad(8, 'Suprapubic')" class="h-12 bg-black/40 border border-white/10 rounded hover:border-orange-400 transition flex flex-col justify-center items-center">
+                    <span>SP</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1" id="quad-dot-8"></span>
+                  </button>
+                  <button id="quad-9" onclick="selectAbdomenQuad(9, 'Left Iliac')" class="h-12 bg-black/40 border border-white/10 rounded hover:border-orange-400 transition flex flex-col justify-center items-center">
+                    <span>LI</span><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1" id="quad-dot-9"></span>
+                  </button>
+                </div>
+                <div class="text-[11px] text-gray-400 mt-3" id="abdomen-selected-quad">Selected: None</div>
+              </div>
+              
+              <!-- Tenderness scale & Bristol Stool chart -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-orange-400 uppercase mb-3">Diagnostic Panel</h4>
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-xs text-gray-400 mb-1">Pain / Tenderness level</label>
+                      <div class="flex gap-2">
+                        <button onclick="setAbdoTenderness('none')" class="flex-1 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-lg" id="btn-tend-none">None</button>
+                        <button onclick="setAbdoTenderness('mild')" class="flex-1 py-1 bg-black/40 text-gray-400 border border-white/10 text-xs font-bold rounded-lg" id="btn-tend-mild">Rebound</button>
+                        <button onclick="setAbdoTenderness('severe')" class="flex-1 py-1 bg-black/40 text-gray-400 border border-white/10 text-xs font-bold rounded-lg" id="btn-tend-severe">Guarding</button>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-400 mb-1">Bristol Stool Scale</label>
+                      <select id="bristol-scale" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-400">
+                        <option value="3">Type 3 (Sausage-like with cracks on surface) - Normal</option>
+                        <option value="4" selected>Type 4 (Sausage or snake-like, smooth and soft) - Optimal</option>
+                        <option value="1">Type 1 (Separate hard lumps, like nuts) - Severe Constipation</option>
+                        <option value="7">Type 7 (Watery, no solid pieces) - Diarrhea</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <button onclick="saveAbdomenDiagnostics()" class="w-full py-2.5 mt-4 rounded-xl bg-orange-400 text-bgDark font-bold text-xs hover:opacity-90 transition">
+                  Sync Abdominal Map
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 13. Pulmonology Workspace -->
+          <div id="spec-panel-pulmonology" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Spirometry Curve Generator -->
+              <div class="glass p-5 rounded-2xl">
+                <h4 class="text-sm font-bold text-teal-400 uppercase mb-3">Spirometry Flow-Volume Loop</h4>
+                <div class="relative w-full bg-black/60 rounded-xl p-2 border border-white/5 overflow-hidden">
+                  <canvas id="spiro-canvas" class="w-full h-40 block bg-[#0B0D10]"></canvas>
+                </div>
+                <div class="text-[10px] text-gray-400 mt-2 text-center">Active spirometric loop displaying Obstructive vs Restrictive disease states.</div>
+              </div>
+              
+              <!-- Spirometry sliders & SpO2 vitals -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-teal-400 uppercase mb-3">Respiratory Mechanics</h4>
+                  <div class="space-y-4 text-xs">
+                    <div>
+                      <div class="flex justify-between mb-1">
+                        <span>FVC (Forced Vital Capacity)</span>
+                        <span id="label-pulm-fvc" class="text-teal-400 font-bold">4.2 Liters</span>
+                      </div>
+                      <input type="range" min="10" max="60" value="42" class="w-full accent-teal-400" oninput="updateSpiroParams('fvc', this.value)">
+                    </div>
+                    <div>
+                      <div class="flex justify-between mb-1">
+                        <span>FEV1 (1-Second Expiration)</span>
+                        <span id="label-pulm-fev1" class="text-teal-400 font-bold">3.2 Liters</span>
+                      </div>
+                      <input type="range" min="10" max="50" value="32" class="w-full accent-teal-400" oninput="updateSpiroParams('fev1', this.value)">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                      <div>
+                        <label class="block text-[10px] text-gray-500 uppercase mb-1">SpO2 Oxygen Sat</label>
+                        <input type="range" min="80" max="100" value="98" class="w-full accent-teal-400" id="pulm-spo2" oninput="updateSpo2Label(this.value)">
+                        <div class="text-center font-bold text-teal-400 mt-1" id="label-pulm-spo2">98%</div>
+                      </div>
+                      <div>
+                        <label class="block text-[10px] text-gray-500 uppercase mb-1">Resp Rate (BPM)</label>
+                        <input type="number" value="16" class="w-full bg-black/40 border border-white/10 rounded-xl px-2 py-1.5 text-xs text-white" id="pulm-rr">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-4 p-3 rounded-xl bg-teal-500/5 border border-teal-500/20 text-xs">
+                  <div class="flex justify-between font-bold">
+                    <span>FEV1/FVC Ratio Index:</span>
+                    <span id="pulm-ratio-label" class="text-emerald-400">76.2% (Normal)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 14. Urology Workspace -->
+          <div id="spec-panel-urology" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Bladder Volume visual flask -->
+              <div class="glass p-5 rounded-2xl text-center">
+                <h4 class="text-sm font-bold text-amber-500 uppercase mb-3">Bladder Volume (PVR) Monitor</h4>
+                <div class="relative w-24 h-40 bg-black/60 rounded-2xl mx-auto border border-white/10 overflow-hidden flex flex-col justify-end">
+                  <div id="urology-beaker-fluid" class="w-full bg-amber-500/40 border-t border-amber-400 transition-all duration-300" style="height: 30%;"></div>
+                  <div class="absolute inset-0 flex items-center justify-center font-mono font-bold text-xs text-white" id="urology-beaker-text">300 mL</div>
+                </div>
+                <div class="text-[10px] text-gray-400 mt-3">Post-Void Residual Volume (PVR) simulation.</div>
+              </div>
+              
+              <!-- Urine dipstick indicator simulation -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-amber-500 uppercase mb-3">Urinalysis Dipstick Matrix</h4>
+                  <div class="space-y-3">
+                    <div>
+                      <label class="block text-xs text-gray-400 mb-1">Volume Slider (mL)</label>
+                      <input type="range" min="0" max="1000" value="300" class="w-full accent-amber-500" oninput="updateBladderVolume(this.value)">
+                    </div>
+                    
+                    <div class="border-t border-white/5 pt-3">
+                      <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-2">Dipstick Reagent Strips</span>
+                      <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="flex justify-between items-center bg-black/20 p-1.5 rounded-lg border border-white/5">
+                          <span>Glucose</span>
+                          <button id="dip-glucose" onclick="toggleDipOption(this)" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Negative</button>
+                        </div>
+                        <div class="flex justify-between items-center bg-black/20 p-1.5 rounded-lg border border-white/5">
+                          <span>Protein</span>
+                          <button id="dip-protein" onclick="toggleDipOption(this)" class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Negative</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <button onclick="saveUrinaryEncounter()" class="w-full py-2.5 mt-4 rounded-xl bg-amber-500 text-bgDark font-bold text-xs hover:opacity-90 transition">
+                  Sync Urinary Profile
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 15. Endocrinology Workspace -->
+          <div id="spec-panel-endocrinology" class="hidden space-y-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <!-- Blood Glucose Log graph -->
+              <div class="glass p-5 rounded-2xl">
+                <h4 class="text-sm font-bold text-purple-400 uppercase mb-3 flex items-center gap-1.5">
+                  <i data-lucide="activity" class="w-4 h-4 text-purple-400"></i> Blood Glucose Logs (7-Day Trend)
+                </h4>
+                <div class="relative w-full bg-black/60 rounded-xl p-2 border border-white/5 overflow-hidden">
+                  <canvas id="glucose-canvas" class="w-full h-40 block bg-[#0B0D10]"></canvas>
+                </div>
+                <div class="text-[10px] text-gray-400 mt-2 text-center">Add new diabetic logs using controls to compile data.</div>
+              </div>
+              
+              <!-- Glucose logger inputs & Thyroid diagram dimensions -->
+              <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-purple-400 uppercase mb-3">Endocrine Parameters</h4>
+                  <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <label class="block text-[10px] text-gray-500 uppercase mb-1">Add Glucose (mg/dL)</label>
+                        <div class="flex gap-1">
+                          <input type="number" id="endo-glucose-val" value="110" class="w-full bg-black/40 border border-white/10 rounded-xl px-2 py-1.5 text-xs text-white">
+                          <button onclick="addGlucoseLog()" class="px-2.5 bg-purple-400 text-bgDark font-bold rounded-xl hover:opacity-90 transition">Log</button>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-[10px] text-gray-500 uppercase mb-1">Thyroid Nodule Diameter</label>
+                        <div class="flex items-center justify-between gap-2">
+                          <input type="range" min="0" max="50" value="12" class="w-24 accent-purple-400" id="slider-endo-thyroid" oninput="updateThyroidSize(this.value)">
+                          <span id="label-endo-thyroid" class="text-purple-400 font-bold text-xs">12 mm</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="border-t border-white/5 pt-3 grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <label class="block text-[9px] text-gray-500 uppercase">TSH Level (uIU/mL)</label>
+                        <input type="text" value="2.4" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-white" id="endo-tsh">
+                      </div>
+                      <div>
+                        <label class="block text-[9px] text-gray-500 uppercase">Free T4 (ng/dL)</label>
+                        <input type="text" value="1.2" class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-white" id="endo-ft4">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <button onclick="saveEndocrineDiagnostics()" class="w-full py-2.5 mt-4 rounded-xl bg-purple-400 text-bgDark font-bold text-xs hover:opacity-90 transition">
+                  Sync Endocrine Metrics
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- E. TELEMEDICINE VIRTUAL ROOM -->
+        <section id="doc-sec-telemedicine" class="hidden space-y-6">
+          <div class="grid md:grid-cols-3 gap-6">
+            <!-- Video Frame -->
+            <div class="md:col-span-2 glass rounded-3xl overflow-hidden bg-black/60 aspect-video relative flex flex-col justify-between p-4">
+              <!-- Video box simulated with image placeholder -->
+              <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800" class="absolute inset-0 w-full h-full object-cover opacity-60" alt="Consultation">
+              
+              <div class="relative z-10 flex items-center justify-between">
+                <span class="px-2.5 py-1 rounded bg-danger text-white text-[10px] font-bold animate-pulse">LIVE CONSULTATION</span>
+                <span class="text-xs text-white font-bold bg-black/40 px-2 py-0.5 rounded">Aarav Sharma</span>
+              </div>
+              
+              <!-- Video controls -->
+              <div class="relative z-10 flex gap-4 justify-center mt-auto">
+                <button onclick="this.classList.toggle('bg-danger'); this.classList.toggle('text-white')" class="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition"><i data-lucide="mic" class="w-5 h-5"></i></button>
+                <button onclick="this.classList.toggle('bg-danger'); this.classList.toggle('text-white')" class="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition"><i data-lucide="video" class="w-5 h-5"></i></button>
+                <button onclick="alert('Simulation: Call ended.'); setDoctorSection('dashboard')" class="w-10 h-10 rounded-full bg-danger text-white flex items-center justify-center hover:opacity-90 transition"><i data-lucide="phone-off" class="w-5 h-5"></i></button>
+              </div>
+            </div>
+
+            <!-- Side EMR consult pane -->
+            <div class="glass p-6 rounded-3xl flex flex-col justify-between">
+              <div>
+                <h3 class="text-lg font-bold mb-4">Quick SOAP Note</h3>
+                <textarea rows="6" placeholder="Document complaints, diagnostics during the call..." class="w-full bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-brandTeal"></textarea>
+              </div>
+              
+              <button onclick="alert('Simulation: SOAP notes synced with telemedicine record.'); setDoctorSection('dashboard')" class="w-full py-3.5 rounded-xl bg-brandTeal text-bgDark font-bold text-xs hover:opacity-90 transition">
+                End Call & Save EMR
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- F. BILLING -->
+        <section id="doc-sec-billing" class="hidden space-y-6">
+          <div class="glass p-6 rounded-3xl">
+            <h3 class="text-lg font-bold mb-6">Recent Claims & Invoices</h3>
+            <div class="space-y-4">
+              <div class="p-4 rounded-2xl bg-black/20 border border-white/5 flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold text-gray-400">INV-2026-092</h4>
+                  <span class="text-sm font-bold text-white block mt-1">Aarav Sharma</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-sm font-bold text-brandTeal">₹1,450.00</span>
+                  <span class="px-2 py-0.5 rounded bg-ent/20 text-ent text-[9px] font-bold block w-fit ml-auto mt-1">PAID</span>
+                </div>
+              </div>
+              
+              <div class="p-4 rounded-2xl bg-black/20 border border-white/5 flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold text-gray-400">INV-2026-091</h4>
+                  <span class="text-sm font-bold text-white block mt-1">Priya Patel</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-sm font-bold text-brandTeal">₹2,200.00</span>
+                  <span class="px-2 py-0.5 rounded bg-warning/20 text-warning text-[9px] font-bold block w-fit ml-auto mt-1">PENDING</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- G. ANALYTICS -->
+        <section id="doc-sec-analytics" class="hidden space-y-6">
+          <div class="glass p-6 rounded-3xl">
+            <h3 class="text-lg font-bold mb-6">Clinical Performance Metrics</h3>
+            <!-- Grid representation of graph charts -->
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="p-4 rounded-2xl bg-black/20 border border-white/5 text-center">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Patient Recovery trends</h4>
+                <!-- Simulated bar chart -->
+                <div class="flex items-end justify-around h-32 pt-4">
+                  <div class="w-6 bg-brandTeal/30 rounded-t h-1/4"></div>
+                  <div class="w-6 bg-brandTeal/40 rounded-t h-2/5"></div>
+                  <div class="w-6 bg-brandTeal/60 rounded-t h-3/5"></div>
+                  <div class="w-6 bg-brandTeal rounded-t h-4/5"></div>
+                </div>
+              </div>
+
+              <div class="p-4 rounded-2xl bg-black/20 border border-white/5 text-center">
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Department Load Distribution</h4>
+                <div class="flex items-end justify-around h-32 pt-4">
+                  <div class="w-6 bg-ent/30 rounded-t h-1/3"></div>
+                  <div class="w-6 bg-ent/50 rounded-t h-2/3"></div>
+                  <div class="w-6 bg-ent rounded-t h-5/6"></div>
+                  <div class="w-6 bg-ent/40 rounded-t h-1/2"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right Navigation Sidebar: AI Copilot Intelligence panel -->
+      <aside class="w-full md:w-80 bg-cardDark border-l border-borderDark flex flex-col p-4 shrink-0 h-screen overflow-y-auto custom-scroll">
+        <div class="flex items-center gap-2 border-b border-borderDark pb-3 mb-4">
+          <i data-lucide="assistant" class="w-5 h-5 text-brandTeal"></i>
+          <span class="text-xs font-bold tracking-wider uppercase text-brandTeal">AI Copilot console</span>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Transcription Log -->
+          <div class="p-4 rounded-2xl bg-black/30 border border-white/5">
+            <h4 class="text-xs font-bold text-white mb-2 uppercase tracking-wide">Live Transcription Scribe</h4>
+            <div class="text-[11px] text-gray-400 leading-relaxed max-h-32 overflow-y-auto custom-scroll space-y-1">
+              <p><strong>Dr:</strong> When did the fever start?</p>
+              <p><strong>Patient:</strong> Mostly last night, accompanied by severe chills.</p>
+            </div>
+          </div>
+
+          <!-- CDS Alert Warnings -->
+          <div class="p-4 rounded-2xl bg-danger/5 border border-danger/20">
+            <h4 class="text-xs font-bold text-danger mb-2 flex items-center gap-1.5"><i data-lucide="alert-triangle" class="w-4 h-4"></i> CDS CLINICAL ALERT</h4>
+            <p class="text-[11px] text-gray-300">Renal insufficiency detected: reduce Metformin dose to avoid toxicity risk.</p>
+          </div>
+
+          <!-- Predictive Risk Scores -->
+          <div class="p-4 rounded-2xl bg-black/30 border border-white/5 space-y-3">
+            <h4 class="text-xs font-bold text-white uppercase tracking-wide">AI Predictive Health Risk</h4>
+            
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <span>Cardiovascular</span>
+                <span class="text-warning font-bold">65% (Moderate)</span>
+              </div>
+              <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-warning h-full w-[65%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <span>Diabetic Mellitus</span>
+                <span class="text-danger font-bold">78% (High)</span>
+              </div>
+              <div class="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-danger h-full w-[78%]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </main>
+
+
+  <!-- ========================================================================= -->
+  <!-- 4. PATIENT PLATFORM VIEW -->
+  <!-- ========================================================================= -->
+  <main id="platform-patient" class="hidden min-h-screen flex flex-col bg-bgDark">
+    <header class="glass px-6 py-4 flex items-center justify-between border-b border-borderDark">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-brandTeal flex items-center justify-center text-bgDark font-bold text-lg">W</div>
+        <span class="font-bold text-white">WyshCare Patient Portal</span>
+      </div>
+      <button onclick="logout()" class="p-2 text-gray-400 hover:text-white transition"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+    </header>
+
+    <div class="flex-1 max-w-6xl mx-auto w-full p-6 grid md:grid-cols-3 gap-6">
+      
+      <!-- Left cards -->
+      <div class="md:col-span-2 space-y-6">
+        <!-- Patient ID Health Card -->
+        <div class="p-6 rounded-3xl bg-gradient-to-r from-brandTeal/20 to-ophthal/20 border border-brandTeal/30 relative overflow-hidden">
+          <div class="absolute right-6 top-6 opacity-10"><i data-lucide="shield" class="w-32 h-32"></i></div>
+          <div class="text-[10px] font-bold text-brandTeal uppercase tracking-widest">WyshCare Health Passport</div>
+          <h2 class="text-3xl font-bold mt-2">Aarav Sharma</h2>
+          <p class="text-sm text-gray-400 mt-1">ID: WYSH-10029 • Blood: O-positive</p>
+        </div>
+
+        <!-- Timeline -->
+        <div class="glass p-6 rounded-3xl">
+          <h3 class="text-lg font-bold mb-4">Clinical Health Timeline</h3>
+          <div class="space-y-6 relative border-l border-white/10 pl-6 ml-2">
+            <div class="relative">
+              <span class="absolute -left-[30px] top-1.5 w-3 h-3 rounded-full bg-brandTeal border-4 border-bgDark"></span>
+              <span class="text-xs text-gray-500 font-bold block">11 JUNE 2026</span>
+              <h4 class="text-sm font-bold mt-0.5">Telehealth consult call</h4>
+              <p class="text-xs text-gray-400">Dr. Verma • Cardiology clinic</p>
+            </div>
+            
+            <div class="relative">
+              <span class="absolute -left-[30px] top-1.5 w-3 h-3 rounded-full bg-brandTeal border-4 border-bgDark"></span>
+              <span class="text-xs text-gray-500 font-bold block">02 MAY 2026</span>
+              <h4 class="text-sm font-bold mt-0.5">Prescription dispensed</h4>
+              <p class="text-xs text-gray-400">Paracetamol 500mg • City Pharmacy</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Chat Advisor -->
+      <div class="glass p-6 rounded-3xl flex flex-col h-[500px]">
+        <h3 class="text-md font-bold mb-3 flex items-center gap-1.5 text-brandTeal"><i data-lucide="bot" class="w-5 h-5"></i> WyshCare AI Advisor</h3>
+        <div class="flex-1 bg-black/40 rounded-2xl p-4 overflow-y-auto custom-scroll text-xs space-y-3 mb-4">
+          <div class="bg-brandTeal/10 p-2.5 rounded-xl border border-brandTeal/20 max-w-[85%] text-white">Hello Aarav, I am your WyshCare AI companion. How can I help you analyze your symptoms?</div>
+        </div>
+        
+        <div class="flex gap-2">
+          <input type="text" placeholder="Type symptom details..." class="flex-1 bg-black/30 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none">
+          <button class="p-2.5 bg-brandTeal text-bgDark rounded-xl hover:opacity-90 transition"><i data-lucide="send" class="w-4.5 h-4.5"></i></button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- ========================================================================= -->
+  <!-- 5. HOSPITAL PLATFORM VIEW -->
+  <!-- ========================================================================= -->
+  <main id="platform-hospital" class="hidden min-h-screen flex flex-col bg-bgDark">
+    <header class="glass px-6 py-4 flex items-center justify-between border-b border-borderDark">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-brandTeal flex items-center justify-center text-bgDark font-bold text-lg">W</div>
+        <span class="font-bold text-white">Hospital Administration Desk</span>
+      </div>
+      <button onclick="logout()" class="p-2 text-gray-400 hover:text-white transition"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+    </header>
+
+    <div class="max-w-7xl mx-auto w-full p-6 space-y-6">
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass p-5 rounded-2xl">
+          <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Hospital Beds Capacity</div>
+          <div class="text-2xl font-bold text-brandTeal">84% (42 Free)</div>
+        </div>
+        <div class="glass p-5 rounded-2xl">
+          <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Active duty Doctors</div>
+          <div class="text-2xl font-bold text-ent">24</div>
+        </div>
+        <div class="glass p-5 rounded-2xl">
+          <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Pharmacy items stock</div>
+          <div class="text-2xl font-bold text-warning">98% OK</div>
+        </div>
+        <div class="glass p-5 rounded-2xl">
+          <div class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-2">Daily claims pending</div>
+          <div class="text-2xl font-bold text-danger">₹48,200</div>
+        </div>
+      </div>
+
+      <!-- Department Logs -->
+      <div class="glass p-6 rounded-3xl">
+        <h3 class="text-lg font-bold mb-4">Institutional Departments load</h3>
+        <div class="space-y-4 text-xs text-gray-400">
+          <div>
+            <div class="flex justify-between mb-1.5">
+              <span>Cardiology Department</span>
+              <span class="text-brandTeal font-bold">12 Patients Checked-In</span>
+            </div>
+            <div class="w-full bg-white/10 rounded-full h-2">
+              <div class="bg-brandTeal h-full w-[80%]"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-1.5">
+              <span>Orthopedics Clinic</span>
+              <span class="text-brandTeal font-bold">8 Patients Checked-In</span>
+            </div>
+            <div class="w-full bg-white/10 rounded-full h-2">
+              <div class="bg-brandTeal h-full w-[50%]"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+
+  <!-- ========================================================================= -->
+  <!-- 6. ADMINISTRATOR PLATFORM VIEW -->
+  <!-- ========================================================================= -->
+  <main id="platform-admin" class="hidden min-h-screen flex flex-col bg-bgDark">
+    <header class="glass px-6 py-4 flex items-center justify-between border-b border-borderDark">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-brandTeal flex items-center justify-center text-bgDark font-bold text-lg">W</div>
+        <span class="font-bold text-white">System Administrator Console</span>
+      </div>
+      <button onclick="logout()" class="p-2 text-gray-400 hover:text-white transition"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+    </header>
+
+    <div class="max-w-7xl mx-auto w-full p-6 space-y-6">
+      <div class="grid md:grid-cols-3 gap-6">
+        
+        <!-- Left: Feature Flags checklist -->
+        <div class="glass p-6 rounded-3xl space-y-4">
+          <h3 class="text-lg font-bold mb-2">Feature Flag Configuration</h3>
+          
+          <label class="flex items-center justify-between cursor-pointer py-2 border-b border-white/5">
+            <span>AI Scribe voice listening</span>
+            <input type="checkbox" checked class="rounded border-white/10 bg-black/40 text-brandTeal">
+          </label>
+          
+          <label class="flex items-center justify-between cursor-pointer py-2 border-b border-white/5">
+            <span>Telehealth video rooms</span>
+            <input type="checkbox" checked class="rounded border-white/10 bg-black/40 text-brandTeal">
+          </label>
+          
+          <label class="flex items-center justify-between cursor-pointer py-2 border-b border-white/5">
+            <span>Emergency Bypass consents</span>
+            <input type="checkbox" class="rounded border-white/10 bg-black/40 text-brandTeal">
+          </label>
+        </div>
+
+        <!-- Right: Audit Logs console -->
+        <div class="md:col-span-2 glass p-6 rounded-3xl">
+          <h3 class="text-lg font-bold mb-4">Real-Time System Log Ledger</h3>
+          <div class="bg-black/40 border border-white/10 rounded-2xl p-4 font-mono text-[10px] text-brandTeal leading-relaxed space-y-1.5 max-h-60 overflow-y-auto custom-scroll">
+            <p>[2026-06-12 00:01:04] SYS: bullmq queue connection established.</p>
+            <p>[2026-06-12 00:02:11] AUTH: doctor@wyshcare.com session validated successfully.</p>
+            <p>[2026-06-12 00:03:45] EMR: Specialty findings saved for patient WYSH-1029.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+
+  <!-- ========================================================================= -->
+  <!-- 7. EMERGENCY BYPASS CONSENT FLOW OVERLAY DIALOG -->
+  <!-- ========================================================================= -->
+  <div id="dialog-emergency" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-6 backdrop-blur-sm">
+    <div class="w-full max-w-md glass p-6 rounded-3xl text-center space-y-6">
+      <div class="w-12 h-12 rounded-full bg-danger/15 text-danger flex items-center justify-center mx-auto"><i data-lucide="shield-alert" class="w-6 h-6"></i></div>
+      
+      <div>
+        <h3 class="text-xl font-bold">Initiate Emergency Bypass</h3>
+        <p class="text-xs text-gray-400 mt-2">This overrides patient consent logs for 24 hours. A complete audit log trail is automatically generated.</p>
+      </div>
+
+      <div class="space-y-4">
+        <input type="text" id="bypass-reason" placeholder="State Clinical Reason (e.g. cardiac shock)..." class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-danger">
+        <input type="password" id="bypass-key" placeholder="Enter Administrative Override Key..." class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-danger">
+      </div>
+
+      <div class="flex gap-4">
+        <button onclick="closeEmergencyBypass()" class="flex-1 py-3 bg-black/40 hover:bg-black/60 rounded-xl text-xs font-bold transition">Cancel</button>
+        <button onclick="confirmEmergencyBypass()" class="flex-1 py-3 bg-danger text-white rounded-xl text-xs font-bold transition">Authorize Override</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT STATE ROUTER -->
+  <!-- ========================================================================= -->
+  <script>
+    let activeRole = 'doctor';
+    let selectedToothNum = null;
+
+    // Initialize lucide icons
+    lucide.createIcons();
+
+    // Swaps views (SPA logic)
+    function navigateTo(id) {
+      document.getElementById('view-landing').classList.add('hidden');
+      document.getElementById('view-auth').classList.add('hidden');
+      document.getElementById('platform-doctor').classList.add('hidden');
+      document.getElementById('platform-patient').classList.add('hidden');
+      document.getElementById('platform-hospital').classList.add('hidden');
+      document.getElementById('platform-admin').classList.add('hidden');
+
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    // Role switcher inside login page
+    function setAuthRole(role) {
+      activeRole = role;
+      
+      const roles = ['doctor', 'patient', 'hospital', 'admin'];
+      roles.forEach(r => {
+        document.getElementById(`btn-role-${r}`).classList.remove('bg-brandTeal', 'text-bgDark');
+        document.getElementById(`btn-role-${r}`).classList.add('text-gray-400', 'hover:text-white');
+      });
+
+      document.getElementById(`btn-role-${role}`).classList.add('bg-brandTeal', 'text-bgDark');
+      document.getElementById(`btn-role-${role}`).classList.remove('text-gray-400', 'hover:text-white');
+
+      // Update mock placeholder login IDs
+      const loginIdInput = document.getElementById('auth-username');
+      if (role === 'doctor') loginIdInput.value = 'doctor@wyshcare.com';
+      if (role === 'patient') loginIdInput.value = 'patient@wyshcare.com';
+      if (role === 'hospital') loginIdInput.value = 'admin@cityhospital.com';
+      if (role === 'admin') loginIdInput.value = 'system@wyshcare.com';
+    }
+
+    function login() {
+      if (activeRole === 'doctor') {
+        navigateTo('platform-doctor');
+      } else if (activeRole === 'patient') {
+        navigateTo('platform-patient');
+      } else if (activeRole === 'hospital') {
+        navigateTo('platform-hospital');
+      } else if (activeRole === 'admin') {
+        navigateTo('platform-admin');
+      }
+    }
+
+    function logout() {
+      navigateTo('view-landing');
+    }
+
+    // Toggles light/dark theme classes on root HTML
+    function toggleTheme() {
+      const html = document.documentElement;
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        html.classList.add('light');
+      } else {
+        html.classList.remove('light');
+        html.classList.add('dark');
+      }
+    }
+
+    // Switch Doctor dashboard subsections
+    function setDoctorSection(sectionId) {
+      const sections = ['dashboard', 'schedule', 'queue', 'emr', 'telemedicine', 'billing', 'analytics'];
+      sections.forEach(s => {
+        document.getElementById(`doc-sec-${s}`).classList.add('hidden');
+        document.getElementById(`nav-doc-${s}`).classList.remove('bg-brandTeal/10', 'text-brandTeal');
+        document.getElementById(`nav-doc-${s}`).classList.add('text-gray-400', 'hover:text-white');
+      });
+
+      document.getElementById(`doc-sec-${sectionId}`).classList.remove('hidden');
+      document.getElementById(`nav-doc-${sectionId}`).classList.add('bg-brandTeal/10', 'text-brandTeal');
+      document.getElementById(`nav-doc-${sectionId}`).classList.remove('text-gray-400', 'hover:text-white');
+
+      // Update header titles
+      const breadcrumb = document.getElementById('breadcrumb-active');
+      breadcrumb.innerText = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+    }
+
+    // Load active patient from queue selection directly into EMR workspace
+    function setActivePatient(patientId, name, wyshId) {
+      document.getElementById('emr-patient-name').innerText = name;
+      document.getElementById('emr-patient-wysh').innerText = wyshId;
+      setDoctorSection('emr');
+    }
+
+    // Switch active specialty tab
+    function setSpecialtyTab(specialtyCode) {
+      const specialties = [
+        'general-medicine', 'dental', 'ent', 'dermatology', 'ophthalmology',
+        'cardiology', 'orthopedics', 'pediatrics', 'gynecology', 'neurology',
+        'psychiatry', 'gastroenterology', 'pulmonology', 'urology', 'endocrinology'
+      ];
+      
+      // Stop ECG animation if running when switching tabs
+      if (typeof ecgAnimationId !== 'undefined' && ecgAnimationId) {
+        cancelAnimationFrame(ecgAnimationId);
+        ecgAnimationId = null;
+      }
+      
+      specialties.forEach(spec => {
+        document.getElementById(`spec-panel-${spec}`).classList.add('hidden');
+        document.getElementById(`tab-spec-${spec}`).classList.remove('bg-brandTeal', 'text-bgDark');
+        document.getElementById(`tab-spec-${spec}`).classList.add('bg-black/40', 'text-gray-400', 'hover:text-white');
+      });
+
+      document.getElementById(`spec-panel-${specialtyCode}`).classList.remove('hidden');
+      document.getElementById(`tab-spec-${specialtyCode}`).classList.add('bg-brandTeal', 'text-bgDark');
+      document.getElementById(`tab-spec-${specialtyCode}`).classList.remove('bg-black/40', 'text-gray-400', 'hover:text-white');
+
+      // Initialize dynamic components when panel is displayed
+      if (specialtyCode === 'cardiology') {
+        setTimeout(initEcg, 50);
+      } else if (specialtyCode === 'pediatrics') {
+        setTimeout(initGrowthChart, 50);
+      } else if (specialtyCode === 'pulmonology') {
+        setTimeout(initPulmChart, 50);
+      } else if (specialtyCode === 'endocrinology') {
+        setTimeout(initGlucoseChart, 50);
+      }
+    }
+
+    // Tooth select highlight logic
+    function selectTooth(toothNum) {
+      selectedToothNum = toothNum;
+      
+      // Clear all active outlines
+      const buttons = document.querySelectorAll('.tooth-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      document.getElementById(`tooth-${toothNum}`).classList.add('active');
+      document.getElementById('dental-condition-box').classList.remove('hidden');
+    }
+
+    // Set tooth condition colors
+    function setToothCondition(condition) {
+      if (!selectedToothNum) return;
+      
+      const indicator = document.querySelector(`#tooth-${selectedToothNum} span:last-child`);
+      indicator.className = 'w-2.5 h-2.5 rounded-full'; // Reset
+      
+      if (condition === 'DECAYED') {
+        indicator.classList.add('bg-danger');
+      } else if (condition === 'FILLED') {
+        indicator.classList.add('bg-ent');
+      } else if (condition === 'MISSING') {
+        indicator.classList.add('bg-gray-500');
+      } else if (condition === 'CROWN') {
+        indicator.classList.add('bg-dental');
+      } else if (condition === 'HEALTHY') {
+        indicator.classList.add('bg-brandTeal');
+      }
+    }
+
+    // Slide hearing ranges
+    function updateHearing(ear, val) {
+      document.getElementById(`label-${ear}-hearing`).innerText = val + ' dB';
+    }
+
+    // Drop lesion coordinate pins
+    function dropLesionPin(event) {
+      const container = document.getElementById('derm-canvas');
+      const rect = container.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      // Open input fields details
+      const detail = document.getElementById('derm-pin-detail');
+      detail.classList.remove('hidden');
+      
+      // Cache coordinates on container temporarily
+      container.dataset.pendingX = x;
+      container.dataset.pendingY = y;
+    }
+
+    function saveLesionPin() {
+      const container = document.getElementById('derm-canvas');
+      const desc = document.getElementById('derm-lesion-desc').value;
+      if (!desc) return;
+
+      const x = container.dataset.pendingX;
+      const y = container.dataset.pendingY;
+
+      // Drop pin marker
+      const pin = document.createElement('div');
+      pin.className = 'lesion-pin absolute w-4 h-4 rounded-full bg-danger border border-white';
+      pin.style.left = `${x - 8}px`;
+      pin.style.top = `${y - 8}px`;
+      pin.title = desc;
+
+      document.getElementById('derm-pins-container').appendChild(pin);
+      document.getElementById('derm-pin-detail').classList.add('hidden');
+      document.getElementById('derm-lesion-desc').value = '';
+    }
+
+    // Append prescription items
+    function addPrescriptionItem() {
+      const name = document.getElementById('med-name').value;
+      const dose = document.getElementById('med-dose').value;
+      if (!name || !dose) return;
+
+      const list = document.getElementById('prescribed-list');
+      const item = document.createElement('li');
+      item.className = 'flex justify-between items-center bg-black/10 px-3 py-2 rounded-lg';
+      item.innerHTML = `<span>${name} (${dose})</span><button onclick="this.parentNode.remove()" class="text-danger hover:text-white">&times;</button>`;
+      
+      list.appendChild(item);
+      document.getElementById('med-name').value = '';
+      document.getElementById('med-dose').value = '';
+    }
+
+    // Save general EMR sandbox
+    function saveEncounter() {
+      alert('Simulation: Active patient encounter saved and synchronized successfully!');
+      setDoctorSection('dashboard');
+    }
+
+    // Passkey Face ID loader simulation
+    function simulatePasskey() {
+      alert('Authenticating via local Biometrics / Face ID...');
+      login();
+    }
+
+    // Emergency Bypass Modal controllers
+    function triggerEmergencyBypass() {
+      document.getElementById('dialog-emergency').classList.remove('hidden');
+    }
+
+    function closeEmergencyBypass() {
+      document.getElementById('dialog-emergency').classList.add('hidden');
+    }
+
+    function confirmEmergencyBypass() {
+      const reason = document.getElementById('bypass-reason').value;
+      if (!reason) {
+        alert('You must supply a clinical reason to override.');
+        return;
+      }
+      alert('Audit Trail Created. Emergency bypass authorized. Consents overridden for 24 hours.');
+      closeEmergencyBypass();
+    }
+
+    // =========================================================================
+    // CARDIOLOGY CONTROLLERS
+    // =========================================================================
+    let ecgCanvas = null;
+    let ecgCtx = null;
+    let ecgAnimationId = null;
+    let ecgX = 0;
+    let ecgY = 80;
+    let ecgBpm = 75;
+    let ecgRhythm = 'sinus';
+
+    function initEcg() {
+      ecgCanvas = document.getElementById('ecg-canvas');
+      if (!ecgCanvas) return;
+      ecgCtx = ecgCanvas.getContext('2d');
+      ecgCanvas.width = ecgCanvas.parentElement.clientWidth || 400;
+      ecgCanvas.height = 160;
+      ecgCtx.strokeStyle = '#FF5A5A';
+      ecgCtx.lineWidth = 2;
+      
+      if (ecgAnimationId) cancelAnimationFrame(ecgAnimationId);
+      ecgX = 0;
+      ecgCtx.fillStyle = '#0B0D10';
+      ecgCtx.fillRect(0, 0, ecgCanvas.width, ecgCanvas.height);
+      drawEcgLoop();
+    }
+
+    function drawEcgLoop() {
+      if (!ecgCanvas || !ecgCtx) return;
+      
+      // Fade trace effect
+      ecgCtx.fillStyle = 'rgba(11, 13, 16, 0.08)';
+      ecgCtx.fillRect(ecgX, 0, 10, ecgCanvas.height);
+      
+      let targetY = 80;
+      let step = (ecgBpm / 60) * 1.8;
+      if (step < 1.2) step = 1.2;
+      
+      let modX = ecgX % (180 * (60 / ecgBpm));
+      
+      if (ecgRhythm === 'sinus') {
+        if (modX > 20 && modX < 25) {
+          targetY = 80 - 6 * Math.sin((modX - 20) * Math.PI / 5);
+        } else if (modX >= 25 && modX < 28) {
+          targetY = 80 + 3 * (modX - 25);
+        } else if (modX >= 28 && modX < 32) {
+          targetY = 80 - 45 * Math.sin((modX - 28) * Math.PI / 4) + 3;
+        } else if (modX >= 32 && modX < 35) {
+          targetY = 80 + 12 * Math.sin((modX - 32) * Math.PI / 3);
+        } else if (modX >= 45 && modX < 55) {
+          targetY = 80 - 10 * Math.sin((modX - 45) * Math.PI / 10);
+        }
+      } else if (ecgRhythm === 'vtach') {
+        targetY = 80 - 40 * Math.sin(ecgX * 0.18);
+      } else if (ecgRhythm === 'afib') {
+        let noise = (Math.random() - 0.5) * 5;
+        targetY = 80 + noise;
+        if (Math.random() < 0.04) {
+          targetY = 80 - 35;
+        }
+      } else if (ecgRhythm === 'brady') {
+        let bradyMod = ecgX % 320;
+        if (bradyMod > 50 && bradyMod < 55) {
+          targetY = 80 - 6 * Math.sin((bradyMod - 50) * Math.PI / 5);
+        } else if (bradyMod >= 55 && bradyMod < 58) {
+          targetY = 80 + 3 * (bradyMod - 55);
+        } else if (bradyMod >= 58 && bradyMod < 62) {
+          targetY = 80 - 45 * Math.sin((bradyMod - 58) * Math.PI / 4) + 3;
+        } else if (bradyMod >= 62 && bradyMod < 65) {
+          targetY = 80 + 12 * Math.sin((bradyMod - 62) * Math.PI / 3);
+        } else if (bradyMod >= 75 && bradyMod < 85) {
+          targetY = 80 - 10 * Math.sin((bradyMod - 75) * Math.PI / 10);
+        }
+      }
+      
+      ecgCtx.beginPath();
+      ecgCtx.moveTo(ecgX, ecgY);
+      ecgX += step;
+      if (ecgX >= ecgCanvas.width) {
+        ecgX = 0;
+        ecgCtx.fillStyle = '#0B0D10';
+        ecgCtx.fillRect(0, 0, ecgCanvas.width, ecgCanvas.height);
+      }
+      ecgCtx.lineTo(ecgX, targetY);
+      ecgCtx.stroke();
+      
+      ecgY = targetY;
+      ecgAnimationId = requestAnimationFrame(drawEcgLoop);
+    }
+
+    function updateEcgParams() {
+      ecgBpm = parseInt(document.getElementById('slider-cardio-bpm').value);
+      document.getElementById('val-cardio-bpm').innerText = ecgBpm;
+      
+      const selectRhythm = document.getElementById('select-cardio-rhythm');
+      ecgRhythm = selectRhythm.value;
+      document.getElementById('val-cardio-rhythm').innerText = selectRhythm.options[selectRhythm.selectedIndex].text;
+      
+      calculateCardiacRisk();
+    }
+
+    function calculateCardiacRisk() {
+      const sys = parseInt(document.getElementById('cardio-bp-sys').value) || 120;
+      const dia = parseInt(document.getElementById('cardio-bp-dia').value) || 80;
+      
+      let riskVal = 1.2;
+      if (ecgBpm > 100) riskVal += 1.8;
+      if (ecgRhythm !== 'sinus') riskVal += 3.2;
+      if (sys > 140) riskVal += 4.0;
+      if (sys > 160) riskVal += 7.5;
+      
+      riskVal = parseFloat(riskVal.toFixed(1));
+      let status = "Low";
+      let statusColor = "text-emerald-400";
+      if (riskVal > 5) { status = "Borderline"; statusColor = "text-yellow-400"; }
+      if (riskVal > 10) { status = "Intermediate"; statusColor = "text-orange-400"; }
+      if (riskVal > 18) { status = "High"; statusColor = "text-danger"; }
+      
+      const label = document.getElementById('label-cardio-risk');
+      label.innerHTML = `${riskVal}% (<span class="${statusColor}">${status}</span>)`;
+    }
+
+    // =========================================================================
+    // ORTHOPEDICS CONTROLLERS
+    // =========================================================================
+    let orthoSelectedJoint = 'Left Knee';
+    let orthoPainLevel = 5;
+
+    function selectJoint(jointName) {
+      orthoSelectedJoint = jointName;
+      document.getElementById('ortho-joint-selected').innerText = `Active Joint: ${jointName}`;
+      
+      // Default joint ROM angles
+      let flexion = 120;
+      let extension = 0;
+      if (jointName.includes('Shoulder')) {
+        flexion = 150;
+        extension = 30;
+      } else if (jointName.includes('Spine')) {
+        flexion = 45;
+        extension = 15;
+      }
+      
+      document.getElementById('slider-ortho-flex').value = flexion;
+      document.getElementById('slider-ortho-ext').value = extension;
+      updateJointROM();
+    }
+
+    function updateJointROM() {
+      const flex = document.getElementById('slider-ortho-flex').value;
+      const ext = document.getElementById('slider-ortho-ext').value;
+      document.getElementById('label-ortho-flex').innerHTML = `${flex}&deg;`;
+      document.getElementById('label-ortho-ext').innerHTML = `${ext}&deg;`;
+    }
+
+    function setJointPain(level) {
+      orthoPainLevel = level;
+      document.getElementById('btn-pain-1').className = 'flex-1 py-1 bg-black/40 hover:bg-orange-500/20 text-xs font-bold rounded-lg border border-white/10';
+      document.getElementById('btn-pain-5').className = 'flex-1 py-1 bg-black/40 hover:bg-orange-500/20 text-xs font-bold rounded-lg border border-white/10';
+      document.getElementById('btn-pain-8').className = 'flex-1 py-1 bg-black/40 hover:bg-orange-500/20 text-xs font-bold rounded-lg border border-white/10';
+      
+      if (level === 1) document.getElementById('btn-pain-1').className = 'flex-1 py-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 text-xs font-bold rounded-lg';
+      if (level === 5) document.getElementById('btn-pain-5').className = 'flex-1 py-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 text-xs font-bold rounded-lg';
+      if (level === 8) document.getElementById('btn-pain-8').className = 'flex-1 py-1 bg-orange-500/20 text-orange-400 border border-orange-500/30 text-xs font-bold rounded-lg';
+    }
+
+    function saveJointEncounter() {
+      const flex = document.getElementById('slider-ortho-flex').value;
+      const ext = document.getElementById('slider-ortho-ext').value;
+      alert(`Simulation: Saved ${orthoSelectedJoint} dynamics. Flexion: ${flex}°, Extension: ${ext}°, VAS Pain: ${orthoPainLevel}/10.`);
+    }
+
+    // =========================================================================
+    // PEDIATRICS CONTROLLERS
+    // =========================================================================
+    let growthCanvas = null;
+    let growthCtx = null;
+    let growthPoint = { x: 160, y: 70 };
+
+    function initGrowthChart() {
+      growthCanvas = document.getElementById('growth-canvas');
+      if (!growthCanvas) return;
+      growthCtx = growthCanvas.getContext('2d');
+      growthCanvas.width = growthCanvas.parentElement.clientWidth || 400;
+      growthCanvas.height = 160;
+      drawGrowthChart();
+    }
+
+    function drawGrowthChart() {
+      if (!growthCanvas || !growthCtx) return;
+      const w = growthCanvas.width;
+      const h = growthCanvas.height;
+      
+      growthCtx.fillStyle = '#0B0D10';
+      growthCtx.fillRect(0, 0, w, h);
+      
+      // Draw Grid Lines
+      growthCtx.strokeStyle = 'rgba(255,255,255,0.03)';
+      growthCtx.lineWidth = 1;
+      for (let x = 30; x < w; x += 30) {
+        growthCtx.beginPath();
+        growthCtx.moveTo(x, 0);
+        growthCtx.lineTo(x, h);
+        growthCtx.stroke();
+      }
+      for (let y = 20; y < h; y += 20) {
+        growthCtx.beginPath();
+        growthCtx.moveTo(0, y);
+        growthCtx.lineTo(w, y);
+        growthCtx.stroke();
+      }
+      
+      // Render Percentile Paths
+      growthCtx.lineWidth = 1.5;
+      
+      // 5th percentile
+      growthCtx.strokeStyle = 'rgba(255, 216, 77, 0.25)';
+      growthCtx.beginPath();
+      growthCtx.moveTo(0, h - 15);
+      growthCtx.bezierCurveTo(w * 0.3, h - 30, w * 0.7, h - 50, w, h - 65);
+      growthCtx.stroke();
+      
+      // 50th percentile
+      growthCtx.strokeStyle = 'rgba(255, 216, 77, 0.55)';
+      growthCtx.beginPath();
+      growthCtx.moveTo(0, h - 25);
+      growthCtx.bezierCurveTo(w * 0.3, h - 50, w * 0.7, h - 80, w, h - 105);
+      growthCtx.stroke();
+      
+      // 95th percentile
+      growthCtx.strokeStyle = 'rgba(255, 216, 77, 0.25)';
+      growthCtx.beginPath();
+      growthCtx.moveTo(0, h - 40);
+      growthCtx.bezierCurveTo(w * 0.3, h - 75, w * 0.7, h - 115, w, h - 145);
+      growthCtx.stroke();
+      
+      // Text labels
+      growthCtx.fillStyle = '#FFD84D';
+      growthCtx.font = '8px Outfit';
+      growthCtx.fillText('95%', w - 28, h - 132);
+      growthCtx.fillText('50%', w - 28, h - 94);
+      growthCtx.fillText('5%', w - 24, h - 56);
+      
+      // Current point
+      if (growthPoint) {
+        growthCtx.fillStyle = '#FFD84D';
+        growthCtx.beginPath();
+        growthCtx.arc(growthPoint.x, growthPoint.y, 6, 0, 2 * Math.PI);
+        growthCtx.fill();
+        growthCtx.strokeStyle = '#FFFFFF';
+        growthCtx.lineWidth = 1.5;
+        growthCtx.stroke();
+      }
+    }
+
+    function plotGrowthPoint(event) {
+      const rect = growthCanvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      growthPoint = { x, y };
+      drawGrowthChart();
+      
+      const val = Math.round((1 - (y / growthCanvas.height)) * 100);
+      document.getElementById('label-ped-weight-pct').innerText = `${Math.max(1, Math.min(99, val - 3))}th Percentile`;
+      document.getElementById('label-ped-height-pct').innerText = `${Math.max(1, Math.min(99, val + 4))}th Percentile`;
+    }
+
+    function updateVaccine(selectEl, name) {
+      const val = selectEl.value;
+      selectEl.className = 'bg-black/40 border border-white/10 rounded-lg px-2 py-0.5 text-xs';
+      if (val === 'pending') selectEl.classList.add('text-gray-400');
+      if (val === 'done') selectEl.classList.add('text-emerald-400');
+      if (val === 'overdue') selectEl.classList.add('text-danger');
+    }
+
+    // =========================================================================
+    // GYNECOLOGY CONTROLLERS
+    // =========================================================================
+    function updateGestationWeeks(weeks) {
+      document.getElementById('label-gyn-weeks').innerText = `${weeks} Weeks`;
+      
+      let phase = "";
+      let fhr = 0;
+      let fh = 0;
+      
+      if (weeks <= 12) {
+        phase = "First Trimester. Fetal cardiovascular loops developing. Organogenesis stage.";
+        fhr = weeks > 6 ? 170 - (weeks - 6) * 3 : 0;
+        fh = 0;
+      } else if (weeks > 12 && weeks <= 27) {
+        phase = "Second Trimester. Rapid skeletomuscular extension. Quickening kicks detectable.";
+        fhr = 150 - (weeks - 12) * 0.4;
+        fh = weeks;
+      } else {
+        phase = "Third Trimester. Alveolar gas exchange maturation. Head down presentation.";
+        fhr = 140 - (weeks - 27) * 0.25;
+        fh = weeks;
+      }
+      
+      fhr = fhr > 0 ? Math.round(fhr) : 0;
+      document.getElementById('gyn-pregnancy-phase').innerText = phase;
+      document.getElementById('gyn-fhr-label').innerText = fhr === 0 ? 'Undetected' : `${fhr} BPM`;
+      document.getElementById('gyn-fh-label').innerText = fh > 0 ? `${fh} cm` : 'Not palpable';
+      
+      updateMaternalRisk();
+    }
+
+    function updateMaternalRisk() {
+      const ed = document.getElementById('gyn-opt-edema').checked;
+      const pr = document.getElementById('gyn-opt-protein').checked;
+      const ha = document.getElementById('gyn-opt-headache').checked;
+      
+      const status = document.getElementById('gyn-risk-status');
+      if (ed && pr && ha) {
+        status.innerText = 'CRITICAL RISK (Preeclampsia Threat)';
+        status.className = 'text-danger animate-pulse';
+      } else if (ed || pr || ha) {
+        status.innerText = 'Moderate Risk - Watch BP Closely';
+        status.className = 'text-warning';
+      } else {
+        status.innerText = 'Normal Progression';
+        status.className = 'text-emerald-400';
+      }
+    }
+
+    // =========================================================================
+    // NEUROLOGY CONTROLLERS
+    // =========================================================================
+    let neuReflexSelected = 'Patellar';
+
+    function selectReflexNode(jointName) {
+      neuReflexSelected = jointName;
+      document.getElementById('neu-reflex-selected').innerText = `Reflex Joint: ${jointName}`;
+      document.getElementById('select-reflex-score').value = 2; // Default Normal
+    }
+
+    function updateReflexVal() {
+      const val = document.getElementById('select-reflex-score').value;
+      alert(`Simulation: Saved reflex index for ${neuReflexSelected} as ${val}+.`);
+    }
+
+    function calcGcs() {
+      const eye = parseInt(document.getElementById('gcs-eye').value);
+      const verbal = parseInt(document.getElementById('gcs-verbal').value);
+      const motor = parseInt(document.getElementById('gcs-motor').value);
+      const total = eye + verbal + motor;
+      
+      let labelText = `${total} / 15 (Normal)`;
+      let labelColor = "text-emerald-400";
+      
+      if (total <= 8) {
+        labelText = `${total} / 15 (Severe Coma State)`;
+        labelColor = "text-danger animate-pulse";
+      } else if (total <= 12) {
+        labelText = `${total} / 15 (Moderate TBI Alert)`;
+        labelColor = "text-warning";
+      }
+      
+      const label = document.getElementById('gcs-total');
+      label.innerText = labelText;
+      label.className = `text-sm font-bold ${labelColor}`;
+    }
+
+    // =========================================================================
+    // PSYCHIATRY CONTROLLERS
+    // =========================================================================
+    function toggleMseWord(btn, category) {
+      btn.classList.toggle('bg-black/40');
+      btn.classList.toggle('bg-sky-500/20');
+      btn.classList.toggle('text-sky-300');
+      btn.classList.toggle('border-sky-500/30');
+    }
+
+    let phq1 = 0;
+    let phq2 = 0;
+
+    function setPhqScore(qNum, score) {
+      if (qNum === 1) phq1 = score;
+      if (qNum === 2) phq2 = score;
+      
+      // Clear buttons
+      for (let s = 0; s <= 3; s++) {
+        const btn = document.querySelector(`.btn-phq-${qNum}-${s}`);
+        if (btn) btn.className = `btn-phq-${qNum}-${s} flex-1 py-1 bg-black/40 border border-white/10 rounded`;
+      }
+      
+      // Select active button
+      const activeBtn = document.querySelector(`.btn-phq-${qNum}-${score}`);
+      if (activeBtn) activeBtn.className = `btn-phq-${qNum}-${score} flex-1 py-1 bg-sky-500/20 border border-sky-500/30 text-sky-300 rounded`;
+      
+      const total = phq1 + phq2;
+      let desc = `${total} (Minimal Depression)`;
+      let color = 'text-emerald-400';
+      
+      if (total >= 3) { desc = `${total} (Moderate Symptoms)`; color = 'text-warning'; }
+      if (total >= 5) { desc = `${total} (Severe Alert Indicator)`; color = 'text-danger animate-pulse'; }
+      
+      const label = document.getElementById('label-phq-total');
+      label.innerText = desc;
+      label.className = `text-xs font-bold ${color}`;
+    }
+
+    // =========================================================================
+    // GASTROENTEROLOGY CONTROLLERS
+    // =========================================================================
+    let giSelectedQuad = 'None';
+
+    function selectAbdomenQuad(id, name) {
+      giSelectedQuad = name;
+      document.getElementById('abdomen-selected-quad').innerText = `Selected: ${name}`;
+      
+      for (let q = 1; q <= 9; q++) {
+        const el = document.getElementById(`quad-${q}`);
+        if (el) el.classList.remove('border-orange-400');
+      }
+      
+      const activeEl = document.getElementById(`quad-${id}`);
+      if (activeEl) activeEl.classList.add('border-orange-400');
+    }
+
+    function setAbdoTenderness(level) {
+      const none = document.getElementById('btn-tend-none');
+      const mild = document.getElementById('btn-tend-mild');
+      const severe = document.getElementById('btn-tend-severe');
+      
+      if (!none || !mild || !severe) return;
+      
+      none.className = 'flex-1 py-1 bg-black/40 text-gray-400 border border-white/10 text-xs font-bold rounded-lg';
+      mild.className = 'flex-1 py-1 bg-black/40 text-gray-400 border border-white/10 text-xs font-bold rounded-lg';
+      severe.className = 'flex-1 py-1 bg-black/40 text-gray-400 border border-white/10 text-xs font-bold rounded-lg';
+      
+      if (level === 'none') {
+        none.className = 'flex-1 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold rounded-lg';
+      } else if (level === 'mild') {
+        mild.className = 'flex-1 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 text-xs font-bold rounded-lg';
+      } else if (level === 'severe') {
+        severe.className = 'flex-1 py-1 bg-danger/20 text-danger border border-danger/30 text-xs font-bold rounded-lg';
+      }
+    }
+
+    function saveAbdomenDiagnostics() {
+      const scale = document.getElementById('bristol-scale').value;
+      alert(`Simulation: Saved Gastroenterology mapping. Active region: ${giSelectedQuad}, Bristol scale: Type ${scale}.`);
+    }
+
+    // =========================================================================
+    // PULMONOLOGY CONTROLLERS
+    // =========================================================================
+    let pulmCanvas = null;
+    let pulmCtx = null;
+    let pulmFvc = 4.2;
+    let pulmFev1 = 3.2;
+
+    function initPulmChart() {
+      pulmCanvas = document.getElementById('spiro-canvas');
+      if (!pulmCanvas) return;
+      pulmCtx = pulmCanvas.getContext('2d');
+      pulmCanvas.width = pulmCanvas.parentElement.clientWidth || 400;
+      pulmCanvas.height = 160;
+      drawSpiroLoop();
+    }
+
+    function drawSpiroLoop() {
+      if (!pulmCanvas || !pulmCtx) return;
+      const w = pulmCanvas.width;
+      const h = pulmCanvas.height;
+      
+      pulmCtx.fillStyle = '#0B0D10';
+      pulmCtx.fillRect(0, 0, w, h);
+      
+      // Draw grid
+      pulmCtx.strokeStyle = 'rgba(255,255,255,0.03)';
+      pulmCtx.lineWidth = 1;
+      for (let x = 40; x < w; x += 40) {
+        pulmCtx.beginPath();
+        pulmCtx.moveTo(x, 0);
+        pulmCtx.lineTo(x, h);
+        pulmCtx.stroke();
+      }
+      for (let y = 20; y < h; y += 20) {
+        pulmCtx.beginPath();
+        pulmCtx.moveTo(0, y);
+        pulmCtx.lineTo(w, y);
+        pulmCtx.stroke();
+      }
+      
+      // Flow-Volume curve
+      pulmCtx.strokeStyle = '#2EE59D';
+      pulmCtx.lineWidth = 2.5;
+      pulmCtx.beginPath();
+      
+      const ox = 50;
+      const oy = h - 20;
+      pulmCtx.moveTo(ox, oy);
+      
+      const peakHeight = (pulmFev1 / 5) * 80;
+      const maxVolWidth = (pulmFvc / 6) * (w - 100);
+      
+      pulmCtx.bezierCurveTo(ox + 30, oy - peakHeight * 1.5, ox + maxVolWidth * 0.45, oy - peakHeight, ox + maxVolWidth, oy);
+      pulmCtx.stroke();
+      
+      // Plot mark
+      pulmCtx.fillStyle = '#FFFFFF';
+      pulmCtx.beginPath();
+      pulmCtx.arc(ox + maxVolWidth * 0.45, oy - peakHeight * 0.8, 4, 0, 2*Math.PI);
+      pulmCtx.fill();
+      
+      pulmCtx.fillStyle = '#2EE59D';
+      pulmCtx.font = '9px Outfit';
+      pulmCtx.fillText('FEV1 Peak', ox + maxVolWidth * 0.45 + 6, oy - peakHeight * 0.8);
+    }
+
+    function updateSpiroParams(type, val) {
+      if (type === 'fvc') {
+        pulmFvc = parseFloat(val) / 10;
+        document.getElementById('label-pulm-fvc').innerText = `${pulmFvc.toFixed(1)} Liters`;
+      } else if (type === 'fev1') {
+        pulmFev1 = parseFloat(val) / 10;
+        document.getElementById('label-pulm-fev1').innerText = `${pulmFev1.toFixed(1)} Liters`;
+      }
+      
+      const ratio = (pulmFev1 / pulmFvc) * 100;
+      const ratioLabel = document.getElementById('pulm-ratio-label');
+      if (ratioLabel) {
+        ratioLabel.innerText = `${ratio.toFixed(1)}% (${ratio >= 70 ? 'Normal' : 'Obstructive Deficit'})`;
+        ratioLabel.className = ratio >= 70 ? 'text-emerald-400 font-bold' : 'text-danger font-bold animate-pulse';
+      }
+      
+      drawSpiroLoop();
+    }
+
+    function updateSpo2Label(val) {
+      const lbl = document.getElementById('label-pulm-spo2');
+      if (!lbl) return;
+      lbl.innerText = `${val}%`;
+      lbl.className = val >= 95 ? 'text-teal-400 mt-1 font-bold' : val >= 90 ? 'text-warning mt-1 font-bold' : 'text-danger mt-1 font-bold animate-pulse';
+    }
+
+    // =========================================================================
+    // UROLOGY CONTROLLERS
+    // =========================================================================
+    function updateBladderVolume(val) {
+      document.getElementById('urology-beaker-text').innerText = `${val} mL`;
+      const pct = Math.min(100, (val / 1000) * 100);
+      document.getElementById('urology-beaker-fluid').style.height = `${pct}%`;
+    }
+
+    function toggleDipOption(btn) {
+      const isNeg = btn.innerText === 'Negative';
+      if (isNeg) {
+        btn.innerText = 'Positive (+)';
+        btn.className = 'px-2 py-0.5 rounded bg-danger/20 text-danger border border-danger/30';
+      } else {
+        btn.innerText = 'Negative';
+        btn.className = 'px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      }
+    }
+
+    function saveUrinaryEncounter() {
+      const val = document.getElementById('urology-beaker-text').innerText;
+      alert(`Simulation: Saved bladder post-void residual diagnostics of ${val}.`);
+    }
+
+    // =========================================================================
+    // ENDOCRINOLOGY CONTROLLERS
+    // =========================================================================
+    let endoGlucoseCanvas = null;
+    let endoGlucoseCtx = null;
+    let endoGlucoseList = [98, 122, 115, 150, 134, 102, 118];
+
+    function initGlucoseChart() {
+      endoGlucoseCanvas = document.getElementById('glucose-canvas');
+      if (!endoGlucoseCanvas) return;
+      endoGlucoseCtx = endoGlucoseCanvas.getContext('2d');
+      endoGlucoseCanvas.width = endoGlucoseCanvas.parentElement.clientWidth || 400;
+      endoGlucoseCanvas.height = 160;
+      drawGlucoseChart();
+    }
+
+    function drawGlucoseChart() {
+      if (!endoGlucoseCanvas || !endoGlucoseCtx) return;
+      const w = endoGlucoseCanvas.width;
+      const h = endoGlucoseCanvas.height;
+      
+      endoGlucoseCtx.fillStyle = '#0B0D10';
+      endoGlucoseCtx.fillRect(0, 0, w, h);
+      
+      // Grid lines
+      endoGlucoseCtx.strokeStyle = 'rgba(255,255,255,0.03)';
+      endoGlucoseCtx.lineWidth = 1;
+      for (let x = w / 8; x < w; x += w / 8) {
+        endoGlucoseCtx.beginPath();
+        endoGlucoseCtx.moveTo(x, 0);
+        endoGlucoseCtx.lineTo(x, h);
+        endoGlucoseCtx.stroke();
+      }
+      
+      // Normal band (70-140 mg/dL normal range map to scale 40-200)
+      endoGlucoseCtx.fillStyle = 'rgba(143, 211, 209, 0.04)';
+      const yNormalMin = h - ((140 - 40) / (200 - 40)) * h;
+      const yNormalMax = h - ((70 - 40) / (200 - 40)) * h;
+      endoGlucoseCtx.fillRect(0, yNormalMin, w, yNormalMax - yNormalMin);
+      
+      // Trendline drawing
+      endoGlucoseCtx.strokeStyle = '#DA70D6';
+      endoGlucoseCtx.lineWidth = 2.5;
+      endoGlucoseCtx.beginPath();
+      
+      const count = endoGlucoseList.length;
+      const stepX = w / (count - 1);
+      
+      for (let i = 0; i < count; i++) {
+        const val = endoGlucoseList[i];
+        const cy = h - ((val - 40) / (200 - 40)) * h;
+        const cx = i * stepX;
+        if (i === 0) {
+          endoGlucoseCtx.moveTo(cx, cy);
+        } else {
+          endoGlucoseCtx.lineTo(cx, cy);
+        }
+      }
+      endoGlucoseCtx.stroke();
+      
+      // Nodes
+      endoGlucoseCtx.fillStyle = '#DA70D6';
+      for (let i = 0; i < count; i++) {
+        const val = endoGlucoseList[i];
+        const cy = h - ((val - 40) / (200 - 40)) * h;
+        const cx = i * stepX;
+        
+        endoGlucoseCtx.beginPath();
+        endoGlucoseCtx.arc(cx, cy, 4.5, 0, 2 * Math.PI);
+        endoGlucoseCtx.fill();
+        
+        endoGlucoseCtx.fillStyle = '#FFFFFF';
+        endoGlucoseCtx.font = '8px Outfit';
+        endoGlucoseCtx.fillText(val, cx - 8, cy - 8);
+        endoGlucoseCtx.fillStyle = '#DA70D6';
+      }
+    }
+
+    function addGlucoseLog() {
+      const input = document.getElementById('endo-glucose-val');
+      const val = parseInt(input.value);
+      if (!val) return;
+      
+      endoGlucoseList.push(val);
+      if (endoGlucoseList.length > 10) {
+        endoGlucoseList.shift();
+      }
+      
+      drawGlucoseChart();
+      input.value = 110;
+    }
+
+    function updateThyroidSize(val) {
+      document.getElementById('label-endo-thyroid').innerText = `${val} mm`;
+    }
+
+    function saveEndocrineDiagnostics() {
+      const tsh = document.getElementById('endo-tsh').value;
+      const ft4 = document.getElementById('endo-ft4').value;
+      alert(`Simulation: Saved endocrine indicators. TSH: ${tsh} uIU/mL, Free T4: ${ft4} ng/dL.`);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+# ============================================================================
+# WYSHCARE PLATFORM — .gitignore
+# ============================================================================
+
+# --- Environment & Secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.cer
+*.secret
+secrets/
+
+# --- Dependencies ---
+node_modules/
+.pnp
+.pnp.js
+
+# --- Build Outputs ---
+dist/
+build/
+.next/
+.next_*
+out/
+*.tsbuildinfo
+
+# --- Testing ---
+coverage/
+.nyc_output/
+junit.xml
+
+# --- IDE & Editor ---
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.suo
+*.sln.docstates
+
+# --- OS Files ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Flutter / Dart ---
+.dart_tool/
+.packages
+.pub/
+build/
+*.g.dart
+*.freezed.dart
+*.gen.dart
+*.mocks.dart
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- Supabase ---
+supabase/.temp
+supabase/.branches
+
+# --- Misc ---
+*.sqlite
+*.sqlite3
+.cache/
+graphql_generated/
+generated/

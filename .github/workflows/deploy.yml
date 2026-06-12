@@ -1,0 +1,11 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Build and push images, then kubectl apply -k infra/k8s/overlays/staging"
