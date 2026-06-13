@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_session.dart';
-import 'doctor_profile.dart';
 import 'token_storage.dart';
 import 'wyshcare_config.dart';
 

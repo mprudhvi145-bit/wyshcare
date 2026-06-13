@@ -51,6 +51,7 @@ Patient
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -108,7 +109,7 @@ final tokenStorageProvider = Provider<TokenStorage>((ref) {
 });
 
 final wyshCareConfigProvider = Provider<WyshCareConfig>((ref) {
-  return WyshCareConfig(
+  return const WyshCareConfig(
     baseUrl: AppConfig.apiBaseUrl,
     enableLogging: true,
   );

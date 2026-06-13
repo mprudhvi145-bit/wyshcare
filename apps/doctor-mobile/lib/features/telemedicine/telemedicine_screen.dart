@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -137,7 +138,7 @@ class _TelemedicineScreenState extends ConsumerState<TelemedicineScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppTheme.secondary.withOpacity(0.15),
+                            color: AppTheme.secondary.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(

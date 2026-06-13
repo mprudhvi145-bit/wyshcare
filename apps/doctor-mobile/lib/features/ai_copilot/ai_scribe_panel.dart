@@ -51,6 +51,7 @@ AI
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -154,8 +155,8 @@ class _AiScribePanelState extends ConsumerState<AiScribePanel> with SingleTicker
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: const [
+              const Row(
+                children: [
                   Icon(Icons.assistant, color: AppTheme.primary, size: 18),
                   SizedBox(width: 8),
                   Text('AI COPILOT INTELLIGENCE', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppTheme.primary)),
@@ -265,10 +266,10 @@ class _AiScribePanelState extends ConsumerState<AiScribePanel> with SingleTicker
         }
 
         return Card(
-          color: cardColor.withOpacity(0.08),
+          color: cardColor.withValues(alpha: 0.08),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: cardColor.withOpacity(0.3)),
+            side: BorderSide(color: cardColor.withValues(alpha: 0.3)),
           ),
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -336,7 +337,7 @@ class _AiScribePanelState extends ConsumerState<AiScribePanel> with SingleTicker
               ],
             ),
           );
-        }).toList(),
+        }),
         const Divider(),
         const SizedBox(height: 8),
         const Text('Preventive Directives', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
@@ -349,7 +350,7 @@ class _AiScribePanelState extends ConsumerState<AiScribePanel> with SingleTicker
               title: Text(title, style: const TextStyle(fontSize: 12)),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

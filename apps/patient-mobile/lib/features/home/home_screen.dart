@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,7 +64,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final name = ref.watch(authProvider).profile?.fullName?.split(' ').first ?? 'there';
+    final name = ref.watch(authProvider).profile?.fullName.split(' ').first ?? 'there';
 
     return ListView(
       padding: const EdgeInsets.all(16),

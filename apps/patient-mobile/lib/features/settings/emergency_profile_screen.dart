@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/widgets/feature_screen.dart';
@@ -60,11 +61,11 @@ class EmergencyProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FeatureScreen(
+    return const FeatureScreen(
       title: 'Emergency Profile',
       showBack: true,
       child: Column(
-        children: const [
+        children: [
           TextField(decoration: InputDecoration(labelText: 'Blood group')),
           SizedBox(height: 16),
           TextField(decoration: InputDecoration(labelText: 'Allergies')),

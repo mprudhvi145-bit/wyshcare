@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
@@ -72,7 +73,7 @@ class TelemedicineRoomScreen extends StatelessWidget {
             right: 16,
             child: Text('Consultation $appointmentId', style: const TextStyle(color: Colors.white)),
           ),
-          Positioned(
+          const Positioned(
             bottom: 32,
             left: 0,
             right: 0,

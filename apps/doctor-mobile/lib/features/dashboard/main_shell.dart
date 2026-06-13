@@ -51,6 +51,7 @@ AI
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -190,7 +191,7 @@ class _MainShellState extends ConsumerState<MainShell> {
               top: 16,
               width: 340,
               child: Card(
-                color: AppTheme.surface.withOpacity(0.95),
+                color: AppTheme.surface.withValues(alpha: 0.95),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: const BorderSide(color: AppTheme.glassBorder),

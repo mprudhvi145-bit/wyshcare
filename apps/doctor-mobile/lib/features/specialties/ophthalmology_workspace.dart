@@ -51,6 +51,7 @@ Doctor
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -221,7 +222,7 @@ class _OphthalmologyWorkspaceState extends ConsumerState<OphthalmologyWorkspace>
                       return FilterChip(
                         label: Text(f),
                         selected: isSelected,
-                        selectedColor: AppTheme.secondary.withOpacity(0.2),
+                        selectedColor: AppTheme.secondary.withValues(alpha: 0.2),
                         checkmarkColor: AppTheme.secondary,
                         onSelected: (_) => _toggleFinding(f),
                       );
@@ -265,7 +266,7 @@ class _OphthalmologyWorkspaceState extends ConsumerState<OphthalmologyWorkspace>
           children: [
             Expanded(
               child: DropdownButtonFormField<double>(
-                value: sph,
+                initialValue: sph,
                 decoration: const InputDecoration(labelText: 'Spherical', contentPadding: EdgeInsets.symmetric(horizontal: 8)),
                 items: List.generate(41, (i) => (i - 20) * 0.25)
                     .map((val) => DropdownMenuItem(value: val, child: Text('${val >= 0 ? "+" : ""}$val')))
@@ -282,7 +283,7 @@ class _OphthalmologyWorkspaceState extends ConsumerState<OphthalmologyWorkspace>
             const SizedBox(width: 8),
             Expanded(
               child: DropdownButtonFormField<double>(
-                value: cyl,
+                initialValue: cyl,
                 decoration: const InputDecoration(labelText: 'Cylinder', contentPadding: EdgeInsets.symmetric(horizontal: 8)),
                 items: List.generate(21, (i) => -i * 0.25)
                     .map((val) => DropdownMenuItem(value: val, child: Text('$val')))

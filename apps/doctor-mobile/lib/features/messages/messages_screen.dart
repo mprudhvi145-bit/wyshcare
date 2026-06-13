@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -200,7 +201,7 @@ class _MessagesScreenState extends ConsumerState<MessagesScreen> with SingleTick
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         constraints: const BoxConstraints(maxWidth: 280),
         decoration: BoxDecoration(
-          color: isMe ? AppTheme.primary.withOpacity(0.2) : AppTheme.surface,
+          color: isMe ? AppTheme.primary.withValues(alpha: 0.2) : AppTheme.surface,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(12),
             topRight: const Radius.circular(12),

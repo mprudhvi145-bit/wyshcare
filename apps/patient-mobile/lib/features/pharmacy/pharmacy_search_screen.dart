@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/widgets/feature_screen.dart';
@@ -60,11 +61,11 @@ class PharmacySearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FeatureScreen(
+    return const FeatureScreen(
       title: 'Search Medicines',
       showBack: true,
       child: Column(
-        children: const [
+        children: [
           TextField(autofocus: true, decoration: InputDecoration(hintText: 'Paracetamol, Amoxicillin...')),
           SizedBox(height: 16),
           SectionCard(title: 'Paracetamol 500mg', subtitle: '₹25 · In stock', icon: Icons.medication),

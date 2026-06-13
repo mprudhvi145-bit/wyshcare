@@ -51,6 +51,7 @@ Doctor
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -106,7 +107,7 @@ final tokenStorageProvider = Provider<TokenStorage>((ref) {
 
 /// Provider for WyshCare doctor SDK config
 final wyshCareConfigProvider = Provider<WyshCareConfig>((ref) {
-  return WyshCareConfig(
+  return const WyshCareConfig(
     // Backend service port 30013
     baseUrl: 'http://localhost:30013/api/v1',
     enableLogging: true,

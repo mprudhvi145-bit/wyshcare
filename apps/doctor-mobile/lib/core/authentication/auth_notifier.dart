@@ -51,6 +51,7 @@ Authentication
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -106,10 +107,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final LocalAuthentication _localAuth = LocalAuthentication();
 
   AuthNotifier({
-    required WyshCareDoctorSDK sdk,
+    required this._sdk,
     required TokenStorage tokenStorage,
-  })  : _sdk = sdk,
-        _tokenStorage = tokenStorage,
+  })  : _tokenStorage = tokenStorage,
         super(const AuthState(status: AuthStatus.initial)) {
     checkCachedSession();
   }

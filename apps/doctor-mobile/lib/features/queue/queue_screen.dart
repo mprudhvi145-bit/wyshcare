@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -220,7 +221,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                               child: Row(
                                 children: [
                                   CircleAvatar(
-                                    backgroundColor: badgeColor.withOpacity(0.15),
+                                    backgroundColor: badgeColor.withValues(alpha: 0.15),
                                     child: Text(name[0], style: TextStyle(color: badgeColor, fontWeight: FontWeight.bold)),
                                   ),
                                   const SizedBox(width: 16),
@@ -242,7 +243,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
-                                          color: badgeColor.withOpacity(0.15),
+                                          color: badgeColor.withValues(alpha: 0.15),
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Text(
@@ -296,7 +297,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
             children: [
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: _selectedPriority,
+                  initialValue: _selectedPriority,
                   decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12), labelText: 'Priority'),
                   items: const [
                     DropdownMenuItem(value: 'ALL', child: Text('All Priorities')),
@@ -310,7 +311,7 @@ class _QueueScreenState extends ConsumerState<QueueScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  value: _selectedStatus,
+                  initialValue: _selectedStatus,
                   decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 12), labelText: 'Status'),
                   items: const [
                     DropdownMenuItem(value: 'ALL', child: Text('All Statuses')),

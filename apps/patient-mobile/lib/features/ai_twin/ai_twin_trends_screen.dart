@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/widgets/feature_screen.dart';
@@ -60,11 +61,11 @@ class AiTwinTrendsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FeatureScreen(
+    return const FeatureScreen(
       title: 'Health Trends',
       showBack: true,
       child: Column(
-        children: const [
+        children: [
           SectionCard(title: 'Blood pressure', subtitle: '128/82 avg · Stable', icon: Icons.monitor_heart),
           SectionCard(title: 'Weight', subtitle: '72 kg · −1.2 kg this month', icon: Icons.scale),
           SectionCard(title: 'Steps', subtitle: '6,420 daily avg', icon: Icons.directions_walk),

@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -84,7 +85,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           TextField(controller: _nameController, decoration: const InputDecoration(labelText: 'Full name')),
           const SizedBox(height: 16),
           DropdownButtonFormField<String>(
-            value: _gender,
+            initialValue: _gender,
             decoration: const InputDecoration(labelText: 'Gender'),
             items: const [
               DropdownMenuItem(value: 'male', child: Text('Male')),

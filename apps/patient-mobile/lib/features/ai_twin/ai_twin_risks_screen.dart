@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/widgets/feature_screen.dart';
@@ -60,11 +61,11 @@ class AiTwinRisksScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FeatureScreen(
+    return const FeatureScreen(
       title: 'Risk Alerts',
       showBack: true,
       child: Column(
-        children: const [
+        children: [
           SectionCard(title: 'Elevated BP trend', subtitle: 'Moderate · Review with doctor', icon: Icons.favorite),
           SectionCard(title: 'Medication adherence', subtitle: '85% this month', icon: Icons.medication),
         ],

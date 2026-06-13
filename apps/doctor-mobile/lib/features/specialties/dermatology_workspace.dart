@@ -51,6 +51,7 @@ Doctor
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -117,7 +118,7 @@ class _DermatologyWorkspaceState extends ConsumerState<DermatologyWorkspace> {
           mainAxisSize: MainAxisSize.min,
           children: [
             DropdownButtonFormField<String>(
-              value: _selectedType,
+              initialValue: _selectedType,
               items: const [
                 DropdownMenuItem(value: 'PAPULE', child: Text('Papule')),
                 DropdownMenuItem(value: 'MACULE', child: Text('Macule')),
@@ -212,7 +213,7 @@ class _DermatologyWorkspaceState extends ConsumerState<DermatologyWorkspace> {
           LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
-              final height = 300.0;
+              const height = 300.0;
               return GestureDetector(
                 onTapUp: (details) => _addPin(details.localPosition, width, height),
                 child: Container(
@@ -225,10 +226,10 @@ class _DermatologyWorkspaceState extends ConsumerState<DermatologyWorkspace> {
                   child: Stack(
                     children: [
                       // Body outline graphics simulated with simple icons
-                      Center(
+                      const Center(
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: const [
+                          children: [
                             Icon(Icons.accessibility_new, size: 200, color: AppTheme.glassBorder),
                             Icon(Icons.accessibility, size: 200, color: AppTheme.glassBorder),
                           ],

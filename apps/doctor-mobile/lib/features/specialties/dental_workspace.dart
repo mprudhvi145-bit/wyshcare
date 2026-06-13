@@ -51,6 +51,7 @@ Doctor
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -198,7 +199,7 @@ class _DentalWorkspaceState extends ConsumerState<DentalWorkspace> {
                         return ChoiceChip(
                           label: Text(cond),
                           selected: isSelected,
-                          selectedColor: _getConditionColor(cond).withOpacity(0.3),
+                          selectedColor: _getConditionColor(cond).withValues(alpha: 0.3),
                           labelStyle: TextStyle(
                             color: isSelected ? _getConditionColor(cond) : AppTheme.textSecondary,
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -244,7 +245,7 @@ class _DentalWorkspaceState extends ConsumerState<DentalWorkspace> {
         decoration: BoxDecoration(
           color: isSelected ? AppTheme.glassBorder : AppTheme.surface,
           border: Border.all(
-            color: isSelected ? AppTheme.primary : color.withOpacity(0.5),
+            color: isSelected ? AppTheme.primary : color.withValues(alpha: 0.5),
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(8),

@@ -45,6 +45,7 @@ Authentication
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wyshcare_patient_sdk/wyshcare_patient_sdk.dart';

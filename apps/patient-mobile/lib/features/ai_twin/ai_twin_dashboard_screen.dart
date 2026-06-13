@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -67,16 +68,16 @@ class AiTwinDashboardScreen extends StatelessWidget {
       showBack: true,
       child: Column(
         children: [
-          Card(
+          const Card(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Health Score', style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  const Text('82/100', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppTheme.primary)),
-                  const Text('Risk level: Moderate', style: TextStyle(color: AppTheme.warning)),
+                  Text('Health Score', style: TextStyle(fontWeight: FontWeight.w600)),
+                  SizedBox(height: 8),
+                  Text('82/100', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppTheme.primary)),
+                  Text('Risk level: Moderate', style: TextStyle(color: AppTheme.warning)),
                 ],
               ),
             ),

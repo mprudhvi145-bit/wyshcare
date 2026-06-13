@@ -51,6 +51,7 @@ Patient
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 

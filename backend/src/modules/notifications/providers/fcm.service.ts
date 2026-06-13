@@ -14,8 +14,22 @@ export class FcmService {
 
   constructor(private readonly configService: ConfigService) {
     this.projectId = this.configService.get<string>('FCM_PROJECT_ID') ?? null;
-    const credPath = this.configService.get<string>('GOOGLE_APPLICATION_CREDENTIALS') ?? null;
-    this.credentialsPath = credPath ? path.resolve(process.cwd(), credPath) : null;
+
+    let resolvedPath: string | null = null;
+    const credPath = this.configService.get<string>('GOOGLE_APPLICATION_CREDENTIALS');
+    if (credPath) {
+      resolvedPath = path.resolve(process.cwd(), credPath);
+    }
+
+    const b64Json = this.configService.get<string>('FIREBASE_SERVICE_ACCOUNT_B64');
+    if (!resolvedPath && b64Json) {
+      const tmpDir = fs.mkdtempSync(path.join(process.cwd(), '.tmp-firebase-'));
+      const tmpFile = path.join(tmpDir, 'service-account.json');
+      fs.writeFileSync(tmpFile, Buffer.from(b64Json, 'base64').toString('utf-8'));
+      resolvedPath = tmpFile;
+    }
+
+    this.credentialsPath = resolvedPath;
 
     if (this.projectId && this.credentialsPath && fs.existsSync(this.credentialsPath)) {
       const raw = JSON.parse(fs.readFileSync(this.credentialsPath, 'utf-8'));
@@ -29,7 +43,7 @@ export class FcmService {
       this.logger.log(`FCM HTTP v1 initialized — project: ${this.projectId}`);
     } else {
       this.logger.warn(
-        `FCM not configured — set FCM_PROJECT_ID and GOOGLE_APPLICATION_CREDENTIALS`,
+        `FCM not configured — set FCM_PROJECT_ID and GOOGLE_APPLICATION_CREDENTIALS or FIREBASE_SERVICE_ACCOUNT_B64`,
       );
     }
   }

@@ -51,6 +51,7 @@ Authentication
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:local_auth/local_auth.dart';
@@ -102,12 +103,10 @@ class AuthState {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier({
-    required WyshCarePatientSDK sdk,
+    required this._sdk,
     required TokenStorage tokenStorage,
-    required SupabaseAuthBridge supabaseBridge,
-  })  : _sdk = sdk,
-        _tokenStorage = tokenStorage,
-        _supabaseBridge = supabaseBridge,
+    required this._supabaseBridge,
+  })  : _tokenStorage = tokenStorage,
         super(const AuthState(status: AuthStatus.initial)) {
     checkCachedSession();
   }
@@ -134,7 +133,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
           state = state.copyWith(
             status: AuthStatus.authenticated,
             profile: profile,
-            needsOnboarding: profile.fullName == null || profile.fullName!.isEmpty,
+            needsOnboarding: profile.fullName.isEmpty,
           );
           return;
         } catch (_) {
@@ -216,7 +215,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         status: AuthStatus.authenticated,
         session: session,
         profile: profile,
-        needsOnboarding: profile.fullName == null || profile.fullName!.isEmpty,
+        needsOnboarding: profile.fullName.isEmpty,
       );
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());

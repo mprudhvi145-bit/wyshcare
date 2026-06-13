@@ -51,6 +51,7 @@ Doctor
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -257,7 +258,7 @@ class _EntWorkspaceState extends ConsumerState<EntWorkspace> {
         return FilterChip(
           label: Text(f),
           selected: isSelected,
-          selectedColor: AppTheme.secondary.withOpacity(0.2),
+          selectedColor: AppTheme.secondary.withValues(alpha: 0.2),
           checkmarkColor: AppTheme.secondary,
           onSelected: (_) => _toggleFinding(_selectedOrgan, f),
         );

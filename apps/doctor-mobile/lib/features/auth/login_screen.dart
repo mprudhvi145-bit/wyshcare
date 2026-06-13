@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -135,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Card(
-              color: AppTheme.surface.withOpacity(0.8),
+              color: AppTheme.surface.withValues(alpha: 0.8),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
                 child: Column(
@@ -166,9 +167,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppTheme.danger.withOpacity(0.1),
+                          color: AppTheme.danger.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppTheme.danger.withOpacity(0.3)),
+                          border: Border.all(color: AppTheme.danger.withValues(alpha: 0.3)),
                         ),
                         child: Text(
                           authState.errorMessage!,
@@ -188,7 +189,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               label: const Text('Phone Number'),
                               selected: !_isEmail,
                               onSelected: (val) => setState(() => _isEmail = !val),
-                              selectedColor: AppTheme.primary.withOpacity(0.2),
+                              selectedColor: AppTheme.primary.withValues(alpha: 0.2),
                               labelStyle: TextStyle(
                                 color: !_isEmail ? AppTheme.primary : AppTheme.textSecondary,
                                 fontWeight: !_isEmail ? FontWeight.bold : FontWeight.normal,
@@ -201,7 +202,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               label: const Text('Email Address'),
                               selected: _isEmail,
                               onSelected: (val) => setState(() => _isEmail = val),
-                              selectedColor: AppTheme.primary.withOpacity(0.2),
+                              selectedColor: AppTheme.primary.withValues(alpha: 0.2),
                               labelStyle: TextStyle(
                                 color: _isEmail ? AppTheme.primary : AppTheme.textSecondary,
                                 fontWeight: _isEmail ? FontWeight.bold : FontWeight.normal,
@@ -290,8 +291,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                     if (authState.isBiometricAvailable && authState.status != AuthStatus.otpSent) ...[
                       const SizedBox(height: 24),
-                      Row(
-                        children: const [
+                      const Row(
+                        children: [
                           Expanded(child: Divider()),
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 12),

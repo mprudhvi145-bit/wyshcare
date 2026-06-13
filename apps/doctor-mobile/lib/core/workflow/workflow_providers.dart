@@ -51,6 +51,7 @@ Doctor
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../authentication/auth_notifier.dart';

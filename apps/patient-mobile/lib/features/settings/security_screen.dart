@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import '../../core/widgets/feature_screen.dart';
@@ -60,11 +61,11 @@ class SecurityScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FeatureScreen(
+    return const FeatureScreen(
       title: 'Security & Sessions',
       showBack: true,
       child: Column(
-        children: const [
+        children: [
           SectionCard(title: 'Biometric unlock', subtitle: 'Enabled', icon: Icons.fingerprint),
           SectionCard(title: 'iPhone 15 Pro', subtitle: 'Current device · Active now', icon: Icons.phone_iphone),
           SectionCard(title: 'Chrome on Mac', subtitle: 'Last active 2 days ago', icon: Icons.computer),

@@ -51,6 +51,7 @@ Doctor
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -93,12 +94,10 @@ class _SoapPanelState extends ConsumerState<SoapPanel> {
         'encounterId': state.encounterId,
         'patientId': state.patientId,
       });
-      if (result is Map) {
-        _s.text = result['subjective']?.toString() ?? '';
-        _o.text = result['objective']?.toString() ?? '';
-        _a.text = result['assessment']?.toString() ?? '';
-        _p.text = result['plan']?.toString() ?? '';
-      }
+      _s.text = result['subjective']?.toString() ?? '';
+      _o.text = result['objective']?.toString() ?? '';
+      _a.text = result['assessment']?.toString() ?? '';
+      _p.text = result['plan']?.toString() ?? '';
     } catch (_) {
       _s.text = 'Patient reports chief complaint as documented in intake.';
       _o.text = 'Vitals stable. Specialty examination findings recorded.';

@@ -80,3 +80,4 @@ supabase/.branches
 graphql_generated/
 generated/
 dist-test/
+.tmp-firebase-*

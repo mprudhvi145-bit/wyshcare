@@ -51,6 +51,7 @@ Mobile
  * All Rights Reserved
  * ============================================================================
  */
+library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -113,7 +114,7 @@ class ProfileScreen extends ConsumerWidget {
             title: const Text('Biometric Authentication'),
             subtitle: const Text('Unlock clinical workspaces with fingerprint/FaceID'),
             value: authState.isBiometricAvailable,
-            activeColor: AppTheme.primary,
+            activeThumbColor: AppTheme.primary,
             onChanged: (val) {
               // Toggle biometric settings
             },
