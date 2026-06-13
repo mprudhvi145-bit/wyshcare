@@ -56,13 +56,15 @@ Authentication
  * ============================================================================
  */
 
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { DoctorAuthService } from './doctor-auth.service';
 import { DoctorOtpRequestDto, DoctorOtpVerifyDto } from './dto/doctor-auth.dto';
 
 @ApiTags('auth')
+@UseGuards(ThrottlerGuard)
 @Controller('auth/doctor')
 export class DoctorAuthController {
   constructor(private readonly doctorAuth: DoctorAuthService) {}

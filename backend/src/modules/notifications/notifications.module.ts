@@ -56,15 +56,18 @@ Notification
 import { Module } from '@nestjs/common';
 
 import { PrismaModule } from '../../providers/prisma/prisma.module';
+import { AuthModule } from '../auth/auth.module';
+import { DeviceTokensModule } from '../device-tokens/device-tokens.module';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsGateway } from './notifications.gateway';
 import { NotificationsService } from './notifications.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
+import { FcmService } from './providers/fcm.service';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule, DeviceTokensModule],
   controllers: [NotificationsController],
-  providers: [NotificationsGateway, NotificationsService, AuditLogService],
+  providers: [NotificationsGateway, NotificationsService, AuditLogService, FcmService],
   exports: [NotificationsService],
 })
 export class NotificationsModule {}

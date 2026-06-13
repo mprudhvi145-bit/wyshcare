@@ -1,0 +1,14 @@
+name: wyshcare_doctor_sdk
+description: WyshCare Doctor SDK — Dart client for the WyshCare healthcare platform
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  http: ^1.2.0
+  collection: ^1.18.0
+
+dev_dependencies:
+  test: ^1.25.0

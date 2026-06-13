@@ -55,6 +55,7 @@ WyshID
  * ============================================================================
  */
 
+import { createHash } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
@@ -74,10 +75,14 @@ export class AuditLogService {
     reason?: string;
     metadata?: Record<string, unknown>;
   }) {
+    const metadata = (input.metadata ?? {}) as Prisma.JsonObject;
+    const canonical = JSON.stringify({ ...input, metadata }, Object.keys({ ...input, metadata }).sort());
+    const immutableHash = createHash('sha256').update(canonical).digest('hex');
     return this.prisma.auditLog.create({
       data: {
         ...input,
-        metadata: (input.metadata ?? {}) as Prisma.JsonObject,
+        metadata,
+        immutableHash,
       },
     });
   }

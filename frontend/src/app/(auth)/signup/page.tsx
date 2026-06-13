@@ -69,9 +69,9 @@ Frontend
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Stethoscope, User, Syringe, Microscope, Pill, Shield } from 'lucide-react';
+import { ArrowRight, Stethoscope, User, Syringe, Microscope, Pill, Shield, ChevronDown, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -90,15 +90,126 @@ const ROLES = [
 ];
 
 const SPECIALTIES = [
-  { id: 'general-medicine', label: 'General Medicine', icon: '🩺', color: '#8FD3D1' },
-  { id: 'dental', label: 'Dental', icon: '🦷', color: '#FFD84D' },
-  { id: 'dermatology', label: 'Dermatology', icon: '🧴', color: '#FF5A5A' },
-  { id: 'ent', label: 'ENT', icon: '👂', color: '#2EE59D' },
-  { id: 'ophthalmology', label: 'Ophthalmology', icon: '👁️', color: '#5856D6' },
-  { id: 'cardiology', label: 'Cardiology', icon: '❤️', color: '#FF2D55' },
-  { id: 'pediatrics', label: 'Pediatrics', icon: '👶', color: '#FF9F0A' },
-  { id: 'orthopedics', label: 'Orthopedics', icon: '🦴', color: '#64D2FF' },
+  { id: 'general-medicine', label: 'General Medicine', icon: '🩺' },
+  { id: 'dental', label: 'Dental', icon: '🦷' },
+  { id: 'cardiology', label: 'Cardiology', icon: '❤️' },
+  { id: 'dermatology', label: 'Dermatology', icon: '🧴' },
+  { id: 'ent', label: 'ENT', icon: '👂' },
+  { id: 'ophthalmology', label: 'Ophthalmology', icon: '👁️' },
+  { id: 'pediatrics', label: 'Pediatrics', icon: '👶' },
+  { id: 'orthopedics', label: 'Orthopedics', icon: '🦴' },
+  { id: 'gynecology', label: 'Gynecology', icon: '🫃' },
+  { id: 'neurology', label: 'Neurology', icon: '🧠' },
+  { id: 'psychiatry', label: 'Psychiatry', icon: '💭' },
+  { id: 'pulmonology', label: 'Pulmonology', icon: '🫁' },
+  { id: 'gastroenterology', label: 'Gastroenterology', icon: '🔬' },
+  { id: 'urology', label: 'Urology', icon: '🫘' },
+  { id: 'endocrinology', label: 'Endocrinology', icon: '⚖️' },
+  { id: 'general-surgery', label: 'General Surgery', icon: '🏥' },
+  { id: 'radiology', label: 'Radiology', icon: '📡' },
+  { id: 'anesthesiology', label: 'Anesthesiology', icon: '💉' },
 ];
+
+function SpecialtyPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [highlightIdx, setHighlightIdx] = useState(-1);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setSearch('');
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filtered = SPECIALTIES.filter(
+    (s) =>
+      s.label.toLowerCase().includes(search.toLowerCase()) ||
+      s.id.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const selected = SPECIALTIES.find((s) => s.id === value);
+
+  return (
+    <div ref={ref} className="relative">
+      <div
+        role="combobox"
+        aria-expanded={open}
+        tabIndex={0}
+        onClick={() => { setOpen(!open); setSearch(''); }}
+        onKeyDown={(e) => {
+          if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true); setHighlightIdx(0); }
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(!open); setSearch(''); }
+        }}
+        className={cn(
+          'flex h-10 w-full items-center justify-between rounded-xl border px-3 text-sm transition-all cursor-pointer',
+          open
+            ? 'border-[rgba(255,255,255,0.15)] bg-white/[0.06]'
+            : 'border-[rgba(255,255,255,0.06)] bg-white/[0.02] hover:bg-white/[0.04]',
+        )}
+      >
+        <span className="flex items-center gap-2">
+          {selected ? (
+            <>
+              <span className="text-base">{selected.icon}</span>
+              <span className="text-white/70">{selected.label}</span>
+            </>
+          ) : (
+            <span className="text-white/40">Select specialty...</span>
+          )}
+        </span>
+        <ChevronDown className={cn('h-4 w-4 text-white/40 transition-transform', open && 'rotate-180')} />
+      </div>
+
+      {open && (
+        <div className="absolute z-50 mt-1 w-full rounded-xl border border-white/10 bg-[#1a1a2e] py-1 shadow-2xl max-h-56 overflow-y-auto">
+          <div className="sticky top-0 border-b border-white/5 bg-[#1a1a2e] px-2 pb-1 pt-1">
+            <input
+              autoFocus
+              placeholder="Type to filter..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setHighlightIdx(0); }}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowDown') { e.preventDefault(); setHighlightIdx(0); }
+                if (e.key === 'ArrowUp' && highlightIdx <= 0) { e.preventDefault(); setHighlightIdx(filtered.length - 1); }
+                if (e.key === 'Enter' && highlightIdx >= 0 && filtered[highlightIdx]) {
+                  onChange(filtered[highlightIdx].id); setOpen(false); setSearch('');
+                }
+                if (e.key === 'Escape') { setOpen(false); setSearch(''); }
+              }}
+              className="w-full rounded-lg border border-white/5 bg-white/[0.04] px-3 py-1.5 text-sm text-white/80 placeholder:text-white/30 outline-none"
+            />
+          </div>
+          {filtered.length === 0 ? (
+            <p className="px-3 py-4 text-center text-sm text-white/30">No matching specialties</p>
+          ) : (
+            filtered.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                onMouseEnter={() => setHighlightIdx(i)}
+                onClick={() => { onChange(s.id); setOpen(false); setSearch(''); }}
+                className={cn(
+                  'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors',
+                  i === highlightIdx ? 'bg-white/[0.08]' : 'hover:bg-white/[0.04]',
+                )}
+              >
+                <span className="text-base">{s.icon}</span>
+                <span className="flex-1 text-white/70">{s.label}</span>
+                {s.id === value && <Check className="h-3.5 w-3.5 text-[#8FD3D1]" />}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function SignupPage() {
   const router = useRouter();
@@ -178,27 +289,7 @@ export default function SignupPage() {
           className="space-y-2"
         >
           <label className="text-xs font-medium text-white/60">Specialty</label>
-          <div className="grid grid-cols-2 gap-1.5">
-            {SPECIALTIES.map((s) => {
-              const selected = specialty === s.id;
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setSpecialty(s.id)}
-                  className={cn(
-                    'flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left transition-all',
-                    selected
-                      ? 'border-[rgba(255,255,255,0.15)] bg-white/[0.06]'
-                      : 'border-[rgba(255,255,255,0.06)] bg-white/[0.02] hover:bg-white/[0.04]',
-                  )}
-                >
-                  <span className="text-base">{s.icon}</span>
-                  <span className="text-[12px] font-medium text-white/70 font-ui truncate">{s.label}</span>
-                </button>
-              );
-            })}
-          </div>
+          <SpecialtyPicker value={specialty} onChange={setSpecialty} />
         </motion.div>
       )}
 

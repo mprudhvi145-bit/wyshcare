@@ -104,7 +104,7 @@ class _OphthalmologyWorkspaceState extends ConsumerState<OphthalmologyWorkspace>
     try {
       final sdk = ref.read(doctorSdkProvider);
 
-      await sdk.client.post('/specialties/ophthalmology/encounters', body: {
+      await sdk.client.post('/specialties/ophthalmology/encounters', {
         'encounterId': state.encounterId,
         'patientId': state.patientId,
         'providerId': 'provider-id-1234',

@@ -162,18 +162,18 @@ class OfflineSyncManager {
 
         try {
           if (action.type == 'SAVE_SPECIALTY_ENCOUNTER') {
-            final specialtyCode = action.endpoint.split('/')[1]; // specialties/:code/encounters
+            final specialtyCode = action.endpoint.split('/')[1];
             await _sdk.client.post(
               '/specialties/$specialtyCode/encounters',
-              body: action.payload,
+              action.payload,
             );
           } else if (action.type == 'CREATE_PRESCRIPTION') {
             await _sdk.prescriptions.create(action.payload);
           } else if (action.type == 'CREATE_NOTE') {
-            await _sdk.ehr.createNote(action.payload);
+            final patientId = action.payload['patientId'] as String? ?? 'patient-id-unknown';
+            await _sdk.ehr.createNote(patientId, action.payload);
           } else {
-            // General POST/PATCH fallback
-            await _sdk.client.post(action.endpoint, body: action.payload);
+            await _sdk.client.post(action.endpoint, action.payload);
           }
 
           // Successfully synchronized. Remove from outbox.

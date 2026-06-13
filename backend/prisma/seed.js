@@ -373,7 +373,179 @@ async function main() {
     },
   });
 
-  console.log({ patientId: patient.id, doctorId: doctor.id });
+  // ─────────────────────────────────────────────────────────────────────────
+  // SEED: Additional DOCTORS — one per specialty (7 new)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const DOCTORS = [
+    {
+      phone: '+919812340001', wyshId: 'WYSH-DOCTOR-02', name: 'Dr. Dinesh Sharma',
+      specialization: 'Dental', sub: ['Restorative Dentistry'],
+      qualifications: ['BDS', 'MDS Prosthodontics'], exp: 8, reg: 'DSMC-349021',
+      fee: 600, lang: ['English', 'Hindi'],
+    },
+    {
+      phone: '+919812340002', wyshId: 'WYSH-DOCTOR-03', name: 'Dr. Meera Patel',
+      specialization: 'Dermatology', sub: ['Cosmetic Dermatology'],
+      qualifications: ['MBBS', 'MD Dermatology'], exp: 10, reg: 'TSMC-349022',
+      fee: 900, lang: ['English', 'Hindi', 'Gujarati'],
+    },
+    {
+      phone: '+919812340003', wyshId: 'WYSH-DOCTOR-04', name: 'Dr. Arun Kapoor',
+      specialization: 'ENT', sub: ['Otology'],
+      qualifications: ['MBBS', 'MS ENT'], exp: 14, reg: 'TSMC-349023',
+      fee: 750, lang: ['English', 'Hindi', 'Telugu'],
+    },
+    {
+      phone: '+919812340004', wyshId: 'WYSH-DOCTOR-05', name: 'Dr. Priya Sharma',
+      specialization: 'Ophthalmology', sub: ['Cataract Surgery'],
+      qualifications: ['MBBS', 'MS Ophthalmology', 'FRCS'], exp: 11, reg: 'TSMC-349024',
+      fee: 850, lang: ['English', 'Hindi'],
+    },
+    {
+      phone: '+919812340005', wyshId: 'WYSH-DOCTOR-06', name: 'Dr. Rajesh Kumar',
+      specialization: 'General Medicine', sub: ['Preventive Medicine'],
+      qualifications: ['MBBS', 'MD General Medicine'], exp: 15, reg: 'TSMC-349025',
+      fee: 700, lang: ['English', 'Hindi', 'Telugu'],
+    },
+    {
+      phone: '+919812340006', wyshId: 'WYSH-DOCTOR-07', name: 'Dr. Ananya Singh',
+      specialization: 'Pediatrics', sub: ['Neonatology'],
+      qualifications: ['MBBS', 'MD Pediatrics', 'DNB'], exp: 9, reg: 'TSMC-349026',
+      fee: 650, lang: ['English', 'Hindi'],
+    },
+    {
+      phone: '+919812340007', wyshId: 'WYSH-DOCTOR-08', name: 'Dr. Vikram Joshi',
+      specialization: 'Orthopedics', sub: ['Joint Replacement'],
+      qualifications: ['MBBS', 'MS Orthopedics', 'Fellowship Knee Surgery'], exp: 13, reg: 'TSMC-349027',
+      fee: 1000, lang: ['English', 'Hindi', 'Marathi'],
+    },
+  ];
+
+  for (const d of DOCTORS) {
+    const user = await prisma.user.upsert({
+      where: { phoneNumber: d.phone },
+      update: {},
+      create: {
+        wyshId: d.wyshId,
+        phoneNumber: d.phone,
+        fullName: d.name,
+        preferredLanguage: 'English',
+        isPhoneVerified: true,
+        chronicConditions: [],
+        allergiesSummary: [],
+        roles: { create: [{ role: 'DOCTOR' }] },
+      },
+    });
+
+    await prisma.doctorProfile.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+        specialization: d.specialization,
+        subSpecializations: d.sub,
+        qualifications: d.qualifications,
+        yearsOfExperience: d.exp,
+        registrationNumber: d.reg,
+        languages: d.lang,
+        consultationFee: d.fee,
+        approvalStatus: 'VERIFIED',
+        clinicMappings: {
+          create: {
+            clinicId: clinic.id,
+            isPrimary: true,
+            consultationFee: d.fee,
+          },
+        },
+      },
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // SEED: Additional PATIENT — Rahul Verma (for Dental OS)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  await prisma.user.upsert({
+    where: { phoneNumber: '+919812340020' },
+    update: {},
+    create: {
+      wyshId: 'WYSH-PATIENT-02',
+      phoneNumber: '+919812340020',
+      fullName: 'Rahul Verma',
+      preferredLanguage: 'English',
+      bloodGroup: 'B+',
+      isPhoneVerified: true,
+      chronicConditions: ['Dental Caries'],
+      allergiesSummary: ['Penicillin'],
+      roles: { create: [{ role: 'PATIENT' }] },
+    },
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // SEED: STAFF users — Nurse, Lab, Pharmacy, Admin
+  // ─────────────────────────────────────────────────────────────────────────
+
+  const STAFF = [
+    {
+      phone: '+919812340010', wyshId: 'WYSH-NURSE-01', name: 'Sister Lakshmi Devi',
+      role: 'NURSE', staffRole: 'NURSE',
+    },
+    {
+      phone: '+919812340011', wyshId: 'WYSH-LAB-01', name: 'Mr. Sanjay Verma',
+      role: 'LAB_PARTNER', staffRole: 'DIAGNOSTICS',
+    },
+    {
+      phone: '+919812340012', wyshId: 'WYSH-PHARMACY-01', name: 'Mr. Rohan Mehta',
+      role: 'PHARMACY_PARTNER', staffRole: 'PHARMACY',
+    },
+    {
+      phone: '+919812340013', wyshId: 'WYSH-ADMIN-01', name: 'Ms. Anita Desai',
+      role: 'ADMIN', staffRole: 'ADMIN',
+    },
+  ];
+
+  for (const s of STAFF) {
+    const user = await prisma.user.upsert({
+      where: { phoneNumber: s.phone },
+      update: {},
+      create: {
+        wyshId: s.wyshId,
+        phoneNumber: s.phone,
+        fullName: s.name,
+        preferredLanguage: 'English',
+        isPhoneVerified: true,
+        chronicConditions: [],
+        allergiesSummary: [],
+        roles: { create: [{ role: s.role }] },
+      },
+    });
+
+    await prisma.staffAssignment.upsert({
+      where: {
+        userId_clinicId_role: {
+          userId: user.id,
+          clinicId: clinic.id,
+          role: s.staffRole,
+        },
+      },
+      update: {},
+      create: {
+        id: `seed-staff-${s.staffRole.toLowerCase()}`,
+        userId: user.id,
+        clinicId: clinic.id,
+        role: s.staffRole,
+        isActive: true,
+      },
+    });
+  }
+
+  console.log({
+    patientId: patient.id,
+    doctorId: doctor.id,
+    doctorsCreated: 1 + DOCTORS.length,
+    staffCreated: STAFF.length,
+  });
 }
 
 main()

@@ -65,10 +65,14 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+import * as Sentry from '@sentry/node';
+import express from 'express';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ApiEnvelopeInterceptor } from './common/interceptors/api-envelope.interceptor';
+import { MetricsController } from './modules/metrics/metrics.controller';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 import { correlationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { requestIdMiddleware } from './common/middleware/request-id.middleware';
 
@@ -103,6 +107,21 @@ function assertSecrets() {
   }
 }
 
+Sentry.init({
+  dsn: process.env.SENTRY_DSN || '',
+  environment: process.env.NODE_ENV ?? 'development',
+  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+  enabled: !!process.env.SENTRY_DSN,
+});
+
+process.on('unhandledRejection', (reason) => {
+  Sentry.captureException(reason);
+});
+
+process.on('uncaughtException', (error) => {
+  Sentry.captureException(error);
+});
+
 async function bootstrap() {
   assertSecrets();
   const app = await NestFactory.create(AppModule, { rawBody: true });
@@ -116,9 +135,31 @@ async function bootstrap() {
   app.use(requestIdMiddleware);
   app.use(
     helmet({
-      crossOriginResourcePolicy: 'same-origin',
+      crossOriginResourcePolicy: { policy: 'same-origin' },
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'"],
+          fontSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+        },
+      },
+      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+      hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+      noSniff: true,
+      xssFilter: true,
+      hidePoweredBy: true,
+      frameguard: { action: 'deny' },
+      ieNoOpen: true,
+      dnsPrefetchControl: { allow: false },
     }),
   );
+  app.use(express.json({ limit: '100kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
@@ -132,6 +173,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalInterceptors(new ApiEnvelopeInterceptor());
+  app.useGlobalInterceptors(new MetricsInterceptor(app.get(MetricsController)));
   app.useGlobalFilters(new HttpExceptionFilter());
 
   if (process.env.NODE_ENV !== 'production') {

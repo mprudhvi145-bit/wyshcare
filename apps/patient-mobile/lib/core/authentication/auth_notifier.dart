@@ -191,7 +191,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (SupabaseAuthBridge.isEnabled) {
         await _supabaseBridge.verifyPhoneOtp(phone: phone, otp: otpCode);
         await _supabaseBridge.syncSessionToTokenStorage();
-        session = await _sdk.auth.refreshSession(deviceName: 'WyshCare Patient');
+        final storedRefreshToken = await _sdk.tokenStorage.getRefreshToken();
+        session = await _sdk.auth.refreshSession(storedRefreshToken ?? '');
       } else {
         session = await _sdk.auth.verifyOtp(
           phone,

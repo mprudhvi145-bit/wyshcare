@@ -61,20 +61,24 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { FamilyService } from './family.service';
 
 @ApiTags('family')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('family')
 export class FamilyController {
   constructor(private readonly familyService: FamilyService) {}
 
+  @Roles('PATIENT', 'CAREGIVER')
   @Get()
   list(@CurrentUser() user: AuthenticatedUser) {
     return this.familyService.list(user.userId);
   }
 
+  @Roles('PATIENT', 'CAREGIVER')
   @Post()
   create(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) {
     return this.familyService.create(user.userId, body as never);

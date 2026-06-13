@@ -46,22 +46,43 @@ Consent
  * ============================================================================
  */
 
+import { IsString, IsArray, IsOptional, IsNumber, IsNotEmpty } from 'class-validator';
+
 export class RequestConsentDto {
+  @IsString() @IsNotEmpty()
   patientUserId!: string;
+
+  @IsString() @IsNotEmpty()
   hiuId!: string;
+
+  @IsString() @IsNotEmpty()
   purpose!: string;
+
+  @IsArray() @IsString({ each: true }) @IsNotEmpty()
   hiTypes!: string[];
+
+  @IsString() @IsOptional()
   dateFrom?: string;
+
+  @IsString() @IsOptional()
   dateTo?: string;
+
+  @IsString() @IsOptional()
   frequency?: string;
+
+  @IsNumber() @IsOptional()
   expiryDays?: number;
 }
 
 export class GrantConsentDto {
+  @IsString() @IsNotEmpty()
   consentId!: string;
 }
 
 export class RevokeConsentDto {
+  @IsString() @IsNotEmpty()
   consentId!: string;
+
+  @IsString() @IsOptional()
   reason?: string;
 }

@@ -46,42 +46,90 @@ AI
  * ============================================================================
  */
 
+import { IsString, IsArray, IsOptional, IsNumber, IsObject, IsIn, IsDate, Min, Max, IsNotEmpty } from 'class-validator';
+
 export class AssessLifestyleDto {
+  @IsString() @IsNotEmpty()
   userId: string;
 }
 
 export class GenerateRecommendationsDto {
+  @IsString() @IsNotEmpty()
   userId: string;
-  focusAreas?: string[]; // e.g., ['nutrition', 'exercise', 'sleep']
-  timeframe?: 'short' | 'medium' | 'long'; // short: 1-2 weeks, medium: 1-3 months, long: 3+ months
+
+  @IsArray() @IsString({ each: true }) @IsOptional()
+  focusAreas?: string[];
+
+  @IsString() @IsOptional() @IsIn(['short', 'medium', 'long'])
+  timeframe?: 'short' | 'medium' | 'long';
+
+  @IsString() @IsOptional() @IsIn(['easy', 'moderate', 'hard'])
   difficultyPreference?: 'easy' | 'moderate' | 'hard';
 }
 
 export class LifestyleProfileDto {
+  @IsString() @IsNotEmpty()
   userId: string;
+
+  @IsNumber() @IsOptional() @Min(0) @Max(24)
   sleepHoursAvg?: number;
+
+  @IsString() @IsOptional()
   sleepQuality?: string;
+
+  @IsString() @IsOptional()
   activityLevel?: string;
+
+  @IsNumber() @IsOptional() @Min(0) @Max(7)
   exerciseDaysPerWeek?: number;
+
+  @IsString() @IsOptional()
   dietType?: string;
+
+  @IsNumber() @IsOptional() @Min(0) @Max(20)
   waterIntakeL?: number;
+
+  @IsString() @IsOptional()
   stressLevel?: string;
+
+  @IsNumber() @IsOptional() @Min(0) @Max(24)
   screenTimeHrs?: number;
+
+  @IsString() @IsOptional()
   smokingStatus?: string;
+
+  @IsString() @IsOptional()
   alcoholConsumption?: string;
+
+  @IsString() @IsOptional()
   occupation?: string;
+
+  @IsObject() @IsOptional()
   metadata?: Record<string, unknown>;
 }
 
 export class LifestyleScoreDto {
+  @IsString() @IsNotEmpty()
   userId: string;
-  activityScore: number; // 0-100
-  nutritionScore: number; // 0-100
-  sleepScore: number; // 0-100
-  stressScore: number; // 0-100
-  substanceUseScore: number; // 0-100
-  overallLifestyleScore: number; // 0-100
-  
+
+  @IsNumber() @Min(0) @Max(100)
+  activityScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
+  nutritionScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
+  sleepScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
+  stressScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
+  substanceUseScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
+  overallLifestyleScore: number;
+
   constructor() {
     this.userId = '';
     this.activityScore = 0;
@@ -94,29 +142,71 @@ export class LifestyleScoreDto {
 }
 
 export class LifestyleRecommendationDto {
+  @IsString() @IsNotEmpty()
   id: string;
+
+  @IsString() @IsNotEmpty()
   userId: string;
+
+  @IsString() @IsNotEmpty() @IsIn(['activity', 'nutrition', 'sleep', 'stress', 'substance_use'])
   category: 'activity' | 'nutrition' | 'sleep' | 'stress' | 'substance_use';
+
+  @IsString() @IsNotEmpty()
   title: string;
+
+  @IsString() @IsNotEmpty()
   description: string;
+
+  @IsString() @IsNotEmpty()
   specificGoal: string;
+
+  @IsString() @IsNotEmpty() @IsIn(['easy', 'moderate', 'hard'])
   difficultyLevel: 'easy' | 'moderate' | 'hard';
-  estimatedImpact: number; // Estimated points improvement on lifestyle score
-  timeframeToSeeResults: string; // e.g., '2 weeks', '1 month'
-  requiredResources: string[]; // e.g., ['fitness tracker', 'meal planning app']
+
+  @IsNumber() @Min(0) @Max(100)
+  estimatedImpact: number;
+
+  @IsString() @IsNotEmpty()
+  timeframeToSeeResults: string;
+
+  @IsArray() @IsString({ each: true })
+  requiredResources: string[];
+
+  @IsString() @IsNotEmpty() @IsIn(['low', 'medium', 'high'])
   priority: 'low' | 'medium' | 'high';
+
+  @IsDate()
   createdAt: Date;
 }
 
 export class LifestyleAssessmentHistoryDto {
+  @IsString() @IsNotEmpty()
   id: string;
+
+  @IsString() @IsNotEmpty()
   userId: string;
+
+  @IsNumber() @Min(0) @Max(100)
   overallScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
   activityScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
   nutritionScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
   sleepScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
   stressScore: number;
+
+  @IsNumber() @Min(0) @Max(100)
   substanceUseScore: number;
+
+  @IsDate()
   assessmentDate: Date;
-  factors: Record<string, unknown>; // Raw data used for assessment
+
+  @IsObject()
+  factors: Record<string, unknown>;
 }

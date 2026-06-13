@@ -61,15 +61,18 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { InteroperabilityService } from './interoperability.service';
 
 @ApiTags('abdm')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('abdm')
 export class InteroperabilityController {
   constructor(private readonly interoperabilityService: InteroperabilityService) {}
 
+  @Roles('PATIENT')
   @Post('link')
   link(@CurrentUser() user: AuthenticatedUser, @Body() body: { abhaAddress: string; abhaNumberMasked?: string }) {
     return this.interoperabilityService.linkAbha(user.userId, body.abhaAddress, body.abhaNumberMasked);

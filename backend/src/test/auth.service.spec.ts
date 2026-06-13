@@ -69,10 +69,13 @@ import { HttpException, UnauthorizedException } from '@nestjs/common';
 
 import { AuthService } from '../modules/auth/auth.service';
 import { SmsService } from '../modules/auth/sms.service';
+import { MfaService } from '../modules/auth/mfa.service';
 import { PrismaService } from '../providers/prisma/prisma.service';
+import { RedisService } from '../providers/redis/redis.service';
 import { AuditLogService } from '../common/services/audit-log.service';
 import { makePrismaMock, makeAuditMock, makeUser, makeChallenge } from './helpers';
 import { WyshIdService } from '../common/services/wysh-id.service';
+import { SupabaseService } from '../providers/supabase/supabase.service';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -94,6 +97,9 @@ async function buildService(prisma: ReturnType<typeof makePrismaMock>) {
       { provide: JwtService, useValue: makeJwtMock() },
       { provide: SmsService, useValue: { sendOtp: async () => {} } },
       { provide: WyshIdService, useValue: { generateWyshId: () => 'WYSH-12345678' } },
+      { provide: RedisService, useValue: { getClient: () => null, healthcheck: async () => ({ status: 'ok' as const }) } },
+      { provide: MfaService, useValue: { generateSecret: () => ({ secret: '', otpauthUrl: '' }), verifyToken: () => true, generateBackupCodes: () => ({ hashed: [], plain: [] }), verifyBackupCode: () => null, removeUsedBackupCode: () => '[]' } },
+      { provide: SupabaseService, useValue: { isAvailable: () => false } },
     ],
   }).compile();
 
@@ -119,7 +125,7 @@ describe('AuthService', () => {
       const result = await service.requestOtp('+910000000001', 'LOGIN');
 
       assert.equal(result.challengeIssued, true);
-      assert.equal(result.otpPreview, '123456'); // fixed in non-production
+      assert.match(result.otpPreview!, /^\d{6}$/); // random 6-digit OTP in non-production
       assert.equal(prisma.otpChallenge.create.mock.calls.length, 1);
     });
 
@@ -304,6 +310,7 @@ describe('AuthService', () => {
   describe('logout', () => {
     it('revokes refresh token and device session', async () => {
       const prisma = makePrismaMock();
+      prisma.refreshToken.findMany.mock.mockImplementation(async () => []);
       prisma.refreshToken.updateMany.mock.mockImplementation(async () => ({}));
       prisma.deviceSession.updateMany.mock.mockImplementation(async () => ({}));
       prisma.auditLog.create.mock.mockImplementation(async () => ({}));
@@ -318,6 +325,7 @@ describe('AuthService', () => {
 
     it('writes SESSION_LOGGED_OUT audit entry', async () => {
       const prisma = makePrismaMock();
+      prisma.refreshToken.findMany.mock.mockImplementation(async () => []);
       prisma.refreshToken.updateMany.mock.mockImplementation(async () => ({}));
       prisma.deviceSession.updateMany.mock.mockImplementation(async () => ({}));
       prisma.auditLog.create.mock.mockImplementation(async () => ({}));

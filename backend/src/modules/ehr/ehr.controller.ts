@@ -61,6 +61,7 @@ import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { PatientChartService } from './patient-chart.service';
 import { EncounterService } from './encounter.service';
 import { OrdersService } from './orders.service';
@@ -83,6 +84,7 @@ import type {
 @ApiTags('Enterprise EHR')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(ThrottlerGuard)
 @Controller('ehr')
 export class EhrController {
   constructor(

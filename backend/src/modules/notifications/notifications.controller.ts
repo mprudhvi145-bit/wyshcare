@@ -60,48 +60,57 @@ import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@ne
 import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { NotificationsService } from './notifications.service';
 import { SendNotificationDto } from './dto/send-notification.dto';
 import { CreateTemplateDto } from './dto/create-template.dto';
 
 @ApiTags('notifications')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notifications: NotificationsService) {}
 
+  @Roles('PATIENT', 'DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Get()
   list(@CurrentUser() user: AuthenticatedUser, @Query('page') page?: string, @Query('limit') limit?: string) {
     return this.notifications.getUserNotifications(user.userId, Number(page) || 1, Number(limit) || 20);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Get('unread-count')
   unreadCount(@CurrentUser() user: AuthenticatedUser) {
     return this.notifications.getUnreadCount(user.userId);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Patch(':id/read')
   markRead(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.notifications.markAsRead(id, user.userId);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Post('read-all')
   markAllRead(@CurrentUser() user: AuthenticatedUser) {
     return this.notifications.markAllAsRead(user.userId);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Get('preferences')
   getPrefs(@CurrentUser() user: AuthenticatedUser) {
     return this.notifications.getPreferences(user.userId);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Patch('preferences')
   updatePref(@CurrentUser() user: AuthenticatedUser, @Body() body: { channel: string; enabled: boolean }) {
     return this.notifications.updatePreference(user.userId, body.channel, body.enabled);
   }
 
+  @Roles('ADMIN', 'SUPER_ADMIN')
   @Post('seed-templates')
   seedTemplates() {
     return this.notifications.seedTemplates();
@@ -109,6 +118,7 @@ export class NotificationsController {
 
   // NEW ENDPOINTS FOR ENHANCED NOTIFICATION SERVICE
 
+  @Roles('ADMIN', 'SUPER_ADMIN')
   @Post('send')
   async sendNotification(
     @CurrentUser() user: AuthenticatedUser,
@@ -122,6 +132,7 @@ export class NotificationsController {
     });
   }
 
+  @Roles('ADMIN', 'SUPER_ADMIN')
   @Post('template')
   async createTemplate(
     @CurrentUser() user: AuthenticatedUser,
@@ -131,6 +142,7 @@ export class NotificationsController {
     return this.notifications.createTemplate(dto);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Get('history')
   async getNotificationHistory(
     @CurrentUser() user: AuthenticatedUser,
@@ -142,6 +154,7 @@ export class NotificationsController {
     return this.notifications.getUserNotifications(targetUserId, 1, Number(limit) || 50);
   }
 
+  @Roles('ADMIN', 'SUPER_ADMIN')
   @Post('emergency-alert')
   async sendEmergencyAlert(
     @CurrentUser() user: AuthenticatedUser,
@@ -152,6 +165,7 @@ export class NotificationsController {
     return this.notifications.sendEmergencyAlert(targetUserId, body.type, body.details);
   }
 
+  @Roles('DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Post('prescription-reminder')
   async sendPrescriptionReminder(
     @CurrentUser() user: AuthenticatedUser,
@@ -161,6 +175,7 @@ export class NotificationsController {
     return this.notifications.sendPrescriptionReminder(targetUserId, body.prescriptionId);
   }
 
+  @Roles('DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Post('lab-result')
   async sendLabResultNotification(
     @CurrentUser() user: AuthenticatedUser,
@@ -170,6 +185,7 @@ export class NotificationsController {
     return this.notifications.sendLabResultNotification(targetUserId, body.labId);
   }
 
+  @Roles('DOCTOR', 'ADMIN', 'SUPER_ADMIN')
   @Post('appointment-reminder')
   async sendAppointmentReminder(
     @CurrentUser() user: AuthenticatedUser,

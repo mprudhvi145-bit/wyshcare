@@ -61,15 +61,18 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { DashboardService } from './dashboard.service';
 
 @ApiTags('dashboard')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('dashboard')
 export class DashboardController {
   constructor(private readonly dashboard: DashboardService) {}
 
+  @Roles('PATIENT')
   @Get('patient')
   patientDashboard(@CurrentUser() user: AuthenticatedUser) {
     return this.dashboard.getPatientDashboard(user.userId);

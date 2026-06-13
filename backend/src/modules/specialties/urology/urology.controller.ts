@@ -56,12 +56,19 @@ WyshID
  * ============================================================================
  */
 
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UrologyService } from './urology.service';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('Specialty: Urology')
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('DOCTOR', 'NURSE')
+@UseGuards(ThrottlerGuard)
 @Controller('specialties/urology')
 export class UrologyController {
   constructor(private readonly urology: UrologyService) {}

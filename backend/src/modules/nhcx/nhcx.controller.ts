@@ -1,61 +1,3 @@
-/**
- * ============================================================================
- * WYSHCARE PLATFORM
- * ============================================================================
- *
- * File: backend/src/modules/nhcx/nhcx.controller.ts
- *
- * Product:
- * WyshCare Healthcare Operating System
- *
- * Brand:
- * WYSH
- *
- * Founder:
- * Vimarshak Prudhvi
- *
- * Purpose:
- * HTTP controller: exposes REST endpoints for nhcx
- *
- * Responsibilities:
- * - Handle HTTP requests for wyshid operations
- * - Validate and transform request/response payloads
- * - Delegate business logic to service layer
- *
- * Used By:
- - backend/src/modules/prescription/prescription.service.ts
- - backend/src/providers/storage/storage.module.ts
- - backend/src/modules/abdm/abdm.module.ts
- - backend/src/modules/prescription/interaction-engine.service.ts
- - backend/src/modules/interoperability/interoperability.module.ts
- - backend/src/modules/digital-twin/digital-twin.service.ts
- - backend/src/main.ts
- - backend/src/modules/health-graph/health-graph.service.ts
- *
- * Calls:
- - swagger
- - common
- *
- * Dependencies:
- - swagger
- - common
- *
- * Security Notes:
-Standard authentication and authorization apply
- *
- * Business Domain:
-WyshID
- *
- * Last Reviewed:
-2026-06-12
- *
- * ============================================================================
- * (c) Wysh Technologies
- * Built by Vimarshak Prudhvi
- * All Rights Reserved
- * ============================================================================
- */
-
 import { Controller, Get, Post, Param, Body, Query, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -89,9 +31,9 @@ export class NHCXController {
 
   @Post('claims/:claimId/submit')
   @Roles('ADMIN', 'CLINIC_MANAGER')
-  @ApiOperation({ summary: 'Submit claim via NHCX gateway' })
+  @ApiOperation({ summary: 'Submit claim via NHCX gateway (DB-backed)' })
   async submitClaim(@Param('claimId') claimId: string) {
-    return this.nhcx.submitClaim(claimId);
+    return this.nhcx.submitClaimDb(claimId);
   }
 
   @Post('submissions/:submissionId/acknowledge')
@@ -128,5 +70,77 @@ export class NHCXController {
     @Query('limit') limit?: string,
   ) {
     return this.nhcx.getSubmissions({ status, limit: limit ? parseInt(limit, 10) : undefined });
+  }
+
+  // ─── FHIR-Compliant Endpoints ───
+
+  @Post('eligibility')
+  @Roles('ADMIN', 'CLINIC_MANAGER')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Check coverage eligibility via NHCX (FHIR CoverageEligibilityResponseBundle)' })
+  async checkEligibility(
+    @Body() body: {
+      patientId: string;
+      patientName?: string;
+      insuranceProvider: string;
+      insuranceId: string;
+      policyNumber?: string;
+      purpose?: 'validation' | 'discovery' | 'auth-requirement' | 'benefits';
+    },
+  ) {
+    return this.nhcx.checkEligibility({
+      patientId: body.patientId,
+      patientName: body.patientName,
+      insuranceProvider: body.insuranceProvider,
+      insuranceId: body.insuranceId,
+      policyNumber: body.policyNumber,
+      purpose: body.purpose ?? 'benefits',
+    });
+  }
+
+  @Post('claims')
+  @Roles('ADMIN', 'CLINIC_MANAGER')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Submit claim via NHCX (FHIR ClaimResponseBundle)' })
+  async submitClaimFhir(
+    @Body() body: {
+      use: 'preauthorization' | 'predetermination' | 'claim';
+      patientId: string;
+      patientName?: string;
+      providerId: string;
+      providerName?: string;
+      insurerName?: string;
+      items: Array<{ productOrService: string; unitPrice: number; quantity: number }>;
+    },
+  ) {
+    return this.nhcx.submitClaim(body);
+  }
+
+  @Get('claims/:id/status')
+  @Roles('ADMIN', 'CLINIC_MANAGER')
+  @ApiOperation({ summary: 'Check claim status via NHCX (FHIR TaskBundle)' })
+  async checkClaimStatus(
+    @Param('id') id: string,
+    @Query('submissionRef') submissionRef?: string,
+  ) {
+    return this.nhcx.checkClaimStatus(id, submissionRef);
+  }
+
+  @Get('providers')
+  @Roles('ADMIN', 'CLINIC_MANAGER')
+  @ApiOperation({ summary: 'Get provider/payor details (FHIR InsurancePlanBundle)' })
+  async getProviders(@Query('providerId') providerId?: string) {
+    return this.nhcx.getProviderDetails(providerId);
+  }
+
+  @Post('claims/:id/reprocess')
+  @Roles('ADMIN', 'CLINIC_MANAGER')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Reprocess a claim via NHCX (FHIR TaskBundle)' })
+  async reprocessClaim(
+    @Param('id') id: string,
+    @Body() body?: { reason?: string },
+  ) {
+    return this.nhcx.reprocessClaim(id, body?.reason);
   }
 }

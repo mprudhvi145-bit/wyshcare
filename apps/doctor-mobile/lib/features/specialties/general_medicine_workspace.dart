@@ -143,25 +143,22 @@ class _GeneralMedicineWorkspaceState extends ConsumerState<GeneralMedicineWorksp
 
   Future<void> _handleSave() async {
     final state = ref.read(activePatientStateProvider);
-    if (state.encounterId == null) return;
+    final pId = state.patientId;
+    if (state.encounterId == null || pId == null) return;
 
     setState(() => _isSaving = true);
     try {
       final sdk = ref.read(doctorSdkProvider);
 
       // Save SOAP Note
-      await sdk.ehr.createNote({
-        'encounterId': state.encounterId,
-        'patientId': state.patientId,
+      await sdk.ehr.createNote(pId, {
         'noteType': 'SOAP',
         'content': 'Subjective: ${_subjectiveController.text}\nObjective: ${_objectiveController.text}\nAssessment: ${_assessmentController.text}\nPlan: ${_planController.text}',
       });
 
       // Save Diagnoses
       for (final diag in _diagnoses) {
-        await sdk.ehr.addDiagnosis({
-          'encounterId': state.encounterId,
-          'patientId': state.patientId,
+        await sdk.ehr.addDiagnosis(pId, {
           'code': 'ICD-10',
           'name': diag,
         });

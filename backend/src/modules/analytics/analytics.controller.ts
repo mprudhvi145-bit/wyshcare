@@ -56,13 +56,16 @@ WyshID
 
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import { AnalyticsService } from './analytics.service';
 
 @Controller('analytics')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class AnalyticsController {
   constructor(private readonly analytics: AnalyticsService) {}
 
+  @Roles('ADMIN', 'CLINIC_MANAGER')
   @Get(':userId/metrics')
   async getMetrics(
     @Param('userId') userId: string,
@@ -82,6 +85,7 @@ export class AnalyticsController {
     );
   }
 
+  @Roles('ADMIN', 'CLINIC_MANAGER')
   @Get(':userId/trend/:metric')
   async getTrend(
     @Param('userId') userId: string,
@@ -91,11 +95,13 @@ export class AnalyticsController {
     return this.analytics.getMetricTrend(userId, metric, days ? parseInt(days, 10) : 30);
   }
 
+  @Roles('ADMIN', 'CLINIC_MANAGER')
   @Get(':userId/appointments')
   async getAppointmentMetrics(@Param('userId') userId: string) {
     return this.analytics.aggregateAppointmentMetrics(userId);
   }
 
+  @Roles('ADMIN', 'CLINIC_MANAGER')
   @Get(':userId/health-score-trend')
   async getHealthScoreTrend(
     @Param('userId') userId: string,
@@ -104,6 +110,7 @@ export class AnalyticsController {
     return this.analytics.aggregateHealthScoreTrend(userId, days ? parseInt(days, 10) : 90);
   }
 
+  @Roles('ADMIN', 'CLINIC_MANAGER')
   @Get(':userId/summary')
   async getDashboardSummary(@Param('userId') userId: string) {
     const [appointments, healthScore] = await Promise.all([

@@ -64,6 +64,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { DiagnosticsService } from './diagnostics.service';
 
@@ -77,25 +79,29 @@ export class DiagnosticsController {
     return this.diagnosticsService.listPartners();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PATIENT')
   @Get('orders')
   orders(@CurrentUser() user: AuthenticatedUser) {
     return this.diagnosticsService.listOrders(user.userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PATIENT')
   @Post('orders')
   createOrder(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) {
     return this.diagnosticsService.bookTest(user.userId, body);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PATIENT')
   @Get('reports')
   reports(@CurrentUser() user: AuthenticatedUser) {
     return this.diagnosticsService.listReports(user.userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PATIENT')
   @Post('reports/upload')
   @UseInterceptors(FileInterceptor('file'))
   uploadReport(

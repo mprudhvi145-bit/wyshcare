@@ -86,6 +86,22 @@ export class FieldEncryptionService {
     state: true,
     pincode: true,
     aadhaarLastDigits: true,
+    aadhaarLast4: true,
+    diagnosisSummary: true,
+    instructions: true,
+    content: true,
+    subjective: true,
+    objective: true,
+    assessment: true,
+    plan: true,
+    transcriptText: true,
+    storageUrl: true,
+    dataPayload: true,
+    emergencyNotes: true,
+    primaryPhysician: true,
+    physicianPhone: true,
+    registrationNumber: true,
+    healthIdNumber: true,
   };
 
   constructor(

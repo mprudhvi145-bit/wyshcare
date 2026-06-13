@@ -84,6 +84,9 @@ const SPECIALTIES = [
   { code: 'gastroenterology', name: 'Gastroenterology', icon: ScanLine, color: '#F39C12', desc: 'Endoscopy, GI' },
   { code: 'urology', name: 'Urology', icon: Scan, color: '#1ABC9C', desc: 'Urological exam' },
   { code: 'endocrinology', name: 'Endocrinology', icon: Activity, color: '#E74C3C', desc: 'Hormone, diabetes' },
+  { code: 'general-surgery', name: 'General Surgery', icon: Scan, color: '#6C5CE7', desc: 'Pre-op, post-op, surgical assessment' },
+  { code: 'radiology', name: 'Radiology', icon: ScanSearch, color: '#00CEC9', desc: 'Imaging, X-ray, MRI, CT review' },
+  { code: 'anesthesiology', name: 'Anesthesiology', icon: ScanLine, color: '#FD79A8', desc: 'Pre-anesthesia, pain management' },
 ];
 
 const glassCard = 'rounded-[24px] border border-[rgba(255,255,255,0.08)] bg-[#15181D] backdrop-blur-xl';

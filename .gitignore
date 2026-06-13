@@ -14,6 +14,7 @@
 *.cer
 *.secret
 secrets/
+.secrets/
 
 # --- Dependencies ---
 node_modules/
@@ -78,3 +79,4 @@ supabase/.branches
 .cache/
 graphql_generated/
 generated/
+dist-test/

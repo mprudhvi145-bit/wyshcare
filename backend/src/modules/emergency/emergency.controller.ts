@@ -68,6 +68,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { EmergencyService } from './emergency.service';
@@ -79,7 +80,7 @@ import { GrantAccessDto } from './dto/grant-access.dto';
 
 @ApiTags('Emergency')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('emergency')
 export class EmergencyController {
   constructor(private readonly emergencyService: EmergencyService) {}

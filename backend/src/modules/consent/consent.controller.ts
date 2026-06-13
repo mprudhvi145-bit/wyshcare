@@ -61,11 +61,12 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { ConsentService } from './consent.service';
 
 @ApiTags('consent')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('consents')
 export class ConsentController {
   constructor(private readonly consentService: ConsentService) {}

@@ -1,0 +1,5 @@
+# WyshCare Backup Cron Jobs
+# Install with: crontab scripts/backup-cron.txt
+
+# Daily backup at 2:00 AM
+0 2 * * * cd /opt/wyshcare/backend && ./scripts/backup.sh /opt/wyshcare/backups >> /var/log/wyshcare-backup.log 2>&1

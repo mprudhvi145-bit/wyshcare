@@ -62,6 +62,7 @@ import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes, randomInt } from 'node:crypto';
 
 import { AuditLogService } from '../../common/services/audit-log.service';
+import { SupabaseService } from '../../providers/supabase/supabase.service';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { EmailService } from './email.service';
 import { SmsService } from './sms.service';
@@ -79,6 +80,7 @@ export class DoctorAuthService {
     private readonly smsService: SmsService,
     private readonly emailService: EmailService,
     private readonly auditLogService: AuditLogService,
+    private readonly supabase: SupabaseService,
   ) {}
 
   async requestOtp(input: { phoneNumber?: string; email?: string; channel: 'SMS' | 'EMAIL' }) {
@@ -96,59 +98,76 @@ export class DoctorAuthService {
       throw new UnauthorizedException('Too many OTP requests. Try again in a few minutes.');
     }
 
-    const otp = '123456';
-    const otpHash = createHash('sha256').update(otp).digest('hex');
-
-    await this.prisma.otpChallenge.create({
-      data: {
-        phoneNumber: identifier,
-        otpHash,
-        purpose: 'LOGIN',
-        channel: input.channel,
-        expiresAt: new Date(Date.now() + 10 * 60_000),
-      },
-    });
-
-    if (process.env.NODE_ENV === 'production') {
-      try {
-        if (input.channel === 'EMAIL') {
-          await this.emailService.sendOtp(input.email!, otp);
-        } else {
-          await this.smsService.sendOtp(input.phoneNumber!, otp);
-        }
-      } catch (err) {
-        this.logger.error(`OTP delivery failed for ${identifier}: ${(err as Error).message}`);
+    if (this.supabase.isAvailable() && input.channel === 'SMS') {
+      const result = await this.supabase.sendOtp(input.phoneNumber!);
+      if (!result.success) {
+        throw new UnauthorizedException('Failed to send OTP');
       }
+    } else {
+      const otp = String(Math.floor(100000 + Math.random() * 900000));
+      const otpHash = createHash('sha256').update(otp).digest('hex');
+
+      await this.prisma.otpChallenge.create({
+        data: {
+          phoneNumber: identifier,
+          otpHash,
+          purpose: 'LOGIN',
+          channel: input.channel,
+          expiresAt: new Date(Date.now() + 10 * 60_000),
+        },
+      });
+
+      if (process.env.NODE_ENV === 'production') {
+        try {
+          if (input.channel === 'EMAIL') {
+            await this.emailService.sendOtp(input.email!, otp);
+          } else {
+            await this.smsService.sendOtp(input.phoneNumber!, otp);
+          }
+        } catch (err) {
+          this.logger.error(`OTP delivery failed for ${identifier}: ${(err as Error).message}`);
+        }
+      }
+
+      return {
+        challengeIssued: true,
+        otpPreview: process.env.NODE_ENV === 'production' ? undefined : otp,
+      };
     }
 
-    return {
-      challengeIssued: true,
-      otpPreview: process.env.NODE_ENV === 'production' ? undefined : otp,
-    };
+    return { challengeIssued: true };
   }
 
   async verifyOtp(input: { phoneNumber?: string; email?: string; otpCode: string; deviceName: string }) {
     const identifier = input.email ?? input.phoneNumber!;
-    const otpHash = createHash('sha256').update(input.otpCode).digest('hex');
 
-    const challenge = await this.prisma.otpChallenge.findFirst({
-      where: {
-        phoneNumber: identifier,
-        otpHash,
-        verifiedAt: null,
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    if (this.supabase.isAvailable() && input.phoneNumber) {
+      const result = await this.supabase.verifyOtp(input.phoneNumber, input.otpCode);
+      if (!result.success) {
+        throw new UnauthorizedException(result.error ?? 'Invalid or expired OTP');
+      }
+    } else {
+      const otpHash = createHash('sha256').update(input.otpCode).digest('hex');
 
-    if (!challenge) {
-      throw new UnauthorizedException('Invalid or expired OTP');
+      const challenge = await this.prisma.otpChallenge.findFirst({
+        where: {
+          phoneNumber: identifier,
+          otpHash,
+          verifiedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!challenge) {
+        throw new UnauthorizedException('Invalid or expired OTP');
+      }
+
+      await this.prisma.otpChallenge.update({
+        where: { id: challenge.id },
+        data: { verifiedAt: new Date() },
+      });
     }
-
-    await this.prisma.otpChallenge.update({
-      where: { id: challenge.id },
-      data: { verifiedAt: new Date() },
-    });
 
     const where = input.email ? { email: input.email } : { phoneNumber: input.phoneNumber };
     const user = await this.prisma.user.findUnique({ where, include: { roles: true } });

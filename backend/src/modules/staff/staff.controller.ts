@@ -61,11 +61,12 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { StaffService } from './staff.service';
 
 @ApiTags('staff')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('staff')
 export class StaffController {
   constructor(private readonly staff: StaffService) {}

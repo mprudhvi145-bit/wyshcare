@@ -105,6 +105,15 @@ export class AdminAuthController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'SUPER_ADMIN')
+  @Post('mfa/verify-step')
+  @HttpCode(HttpStatus.OK)
+  verifyMfaStep(@CurrentUser() user: AuthenticatedUser, @Body() input: AdminMfaVerifyDto) {
+    return this.adminAuth.verifyMfaStep(user.userId, input.totpCode);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'SUPER_ADMIN')
   @Post('mfa/disable')
   @HttpCode(HttpStatus.OK)
   disableMfa(@CurrentUser() user: AuthenticatedUser, @Body() input: AdminMfaDisableDto) {

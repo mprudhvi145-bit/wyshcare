@@ -62,10 +62,11 @@ WyshID
  */
 
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ThrottlerModule } from '@nestjs/throttler';
+import depthLimit from 'graphql-depth-limit';
 
 import { EncryptionModule } from './common/encryption/encryption.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -80,6 +81,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { PharmacyModule } from './modules/pharmacy/pharmacy.module';
 import { DiagnosticsModule } from './modules/diagnostics/diagnostics.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { DeviceTokensModule } from './modules/device-tokens/device-tokens.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TimelineModule } from './modules/timeline/timeline.module';
 import { InteroperabilityModule } from './modules/interoperability/interoperability.module';
@@ -114,6 +116,7 @@ import { AiPreventiveModule } from './modules/ai-preventive/ai-preventive.module
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SpecialtiesModule } from './modules/specialties/specialties.module';
 import { ClinicBrandingModule } from './modules/clinic-branding/clinic-branding.module';
+import { FhirModule } from './modules/fhir/fhir.module';
 import { EventsConsumerModule } from './providers/events/consumers/events-consumer.module';
 import { RabbitMQModule } from './providers/rabbitmq/rabbitmq.module';
 import { PrismaModule } from './providers/prisma/prisma.module';
@@ -127,22 +130,30 @@ import { GeminiModule } from './providers/gemini/gemini.module';
 import { AiProviderModule } from './providers/ai/ai-provider.module';
 import { AiOrchestratorModule } from './providers/ai/ai-orchestrator.module';
 import { JobsModule } from './providers/jobs/jobs.module';
-import { HealthController } from './health.controller';
+import { SupabaseModule } from './providers/supabase/supabase.module';
+import { HealthModule } from './modules/health/health.module';
+import { MetricsModule } from './modules/metrics/metrics.module';
 import { AuditLogService } from './common/services/audit-log.service';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
-  controllers: [HealthController],
+  controllers: [],
   providers: [AuditLogService, JwtAuthGuard, RolesGuard],
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
         ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
-        GraphQLModule.forRoot<ApolloDriverConfig>({
+        GraphQLModule.forRootAsync<ApolloDriverConfig>({
             driver: ApolloDriver,
-            autoSchemaFile: true,
-            sortSchema: true,
-            playground: process.env.NODE_ENV !== 'production',
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                autoSchemaFile: true,
+                sortSchema: true,
+                playground: config.get('NODE_ENV') !== 'production',
+                introspection: config.get('NODE_ENV') !== 'production',
+                validationRules: [depthLimit(10)],
+                csrfPrevention: true,
+            }),
         }),
         PrismaModule,
         EncryptionModule,
@@ -157,7 +168,10 @@ import { RolesGuard } from './common/guards/roles.guard';
         GeminiModule,
         AiProviderModule,
         AiOrchestratorModule,
+        SupabaseModule,
         JobsModule,
+        HealthModule,
+        MetricsModule,
         AuthModule,
         IdentityModule,
         ConsentModule,
@@ -170,6 +184,7 @@ import { RolesGuard } from './common/guards/roles.guard';
         PharmacyModule,
         DiagnosticsModule,
         AdminModule,
+        DeviceTokensModule,
         NotificationsModule,
         TimelineModule,
         InteroperabilityModule,
@@ -204,6 +219,7 @@ import { RolesGuard } from './common/guards/roles.guard';
         AnalyticsModule,
         SpecialtiesModule,
         ClinicBrandingModule,
+        FhirModule,
     ],
 })
 export class AppModule {}

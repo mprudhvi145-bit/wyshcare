@@ -46,28 +46,54 @@ WyshID
  * ============================================================================
  */
 
+import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
+
 export class CreateAbhaDto {
+  @IsString() @IsNotEmpty()
   userId!: string;
+
+  @IsString() @IsNotEmpty()
   abhaNumber!: string;
+
+  @IsString() @IsNotEmpty()
   abhaAddress!: string;
+
+  @IsString() @IsOptional()
   healthIdNumber?: string;
+
+  @IsString() @IsOptional()
   name?: string;
+
+  @IsString() @IsOptional()
   gender?: string;
+
+  @IsString() @IsOptional()
   dateOfBirth?: string;
+
+  @IsString() @IsOptional()
   photo?: string;
 }
 
 export class LinkAbhaDto {
+  @IsString() @IsNotEmpty()
   userId!: string;
+
+  @IsString() @IsNotEmpty()
   abhaNumber!: string;
+
+  @IsString() @IsNotEmpty()
   abhaAddress!: string;
 }
 
 export class VerifyAbhaOtpDto {
+  @IsString() @IsNotEmpty()
   txnId!: string;
+
+  @IsString() @IsNotEmpty()
   otp!: string;
 }
 
 export class ResolveAbhaDto {
+  @IsString() @IsNotEmpty()
   abhaAddress!: string;
 }

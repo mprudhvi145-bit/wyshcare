@@ -87,10 +87,10 @@ class _BillingPanelState extends ConsumerState<BillingPanel> {
 
   Future<void> _generateInvoice() async {
     final state = ref.read(activePatientStateProvider);
-    if (state.encounterId == null) return;
+    if (state.encounterId == null || state.patientId == null) return;
     setState(() => _generating = true);
     try {
-      await ref.read(doctorSdkProvider).client.post('/billing/invoices', body: {
+      await ref.read(doctorSdkProvider).client.post('/billing/invoices', {
         'encounterId': state.encounterId,
         'patientId': state.patientId,
         'items': _items,

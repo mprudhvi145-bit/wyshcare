@@ -104,7 +104,7 @@ class EncounterWorkflowNotifier extends StateNotifier<EncounterWorkflowState> {
   void startEncounter({String? specialtyCode}) {
     final profile = _ref.read(authProvider).doctorProfile;
     final code = specialtyCode ??
-        SpecialtyRegistry.primaryCodeFromProfile(profile?.specializations ?? []);
+        SpecialtyRegistry.primaryCodeFromProfile(profile?.specialization != null ? [profile!.specialization!] : []);
 
     state = EncounterWorkflowState(
       currentStep: WorkflowStepId.intake,
@@ -151,6 +151,6 @@ final doctorSpecialtyProvider = Provider<SpecialtyConfig>((ref) {
   final active = ref.watch(activePatientStateProvider).specialtyCode;
   if (active != null) return SpecialtyRegistry.resolve(active);
   return SpecialtyRegistry.resolve(
-    SpecialtyRegistry.primaryCodeFromProfile(profile?.specializations ?? []),
+    SpecialtyRegistry.primaryCodeFromProfile(profile?.specialization != null ? [profile!.specialization!] : []),
   );
 });

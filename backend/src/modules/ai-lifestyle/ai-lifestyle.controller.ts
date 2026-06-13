@@ -56,7 +56,7 @@ AI
  * ============================================================================
  */
 
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -84,11 +84,8 @@ export class AiLifestyleController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('userId') userId: string
   ): Promise<LifestyleScoreDto> {
-    // Users can only assess their own lifestyle unless they have appropriate permissions
     if (user.userId !== userId && !user.roles?.includes('ADMIN')) {
-      // In a real implementation, we would throw an UnauthorizedException
-      // For now, we'll allow it but log the attempt
-      console.warn(`User ${user.userId} attempted to assess lifestyle for user ${userId}`);
+      throw new ForbiddenException('You can only assess your own lifestyle');
     }
     return this.aiLifestyleService.assessLifestyle(userId);
   }
@@ -102,10 +99,8 @@ export class AiLifestyleController {
     @Param('userId') userId: string,
     @Body() dto: GenerateRecommendationsDto
   ): Promise<LifestyleRecommendationDto[]> {
-    // Users can only get recommendations for themselves unless they have appropriate permissions
     if (user.userId !== userId && !user.roles?.includes('ADMIN')) {
-      // In a real implementation, we would throw an UnauthorizedException
-      console.warn(`User ${user.userId} attempted to get recommendations for user ${userId}`);
+      throw new ForbiddenException('You can only generate recommendations for yourself');
     }
     return this.aiLifestyleService.generateRecommendations(userId, dto);
   }
@@ -118,9 +113,8 @@ export class AiLifestyleController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('userId') userId: string
   ) {
-    // Users can only get their own profile unless they have appropriate permissions
     if (user.userId !== userId && !user.roles?.includes('ADMIN')) {
-      console.warn(`User ${user.userId} attempted to get profile for user ${userId}`);
+      throw new ForbiddenException('You can only view your own profile');
     }
     return this.aiLifestyleService.getProfile(userId);
   }
@@ -134,9 +128,8 @@ export class AiLifestyleController {
     @Param('userId') userId: string,
     @Param('limit') limit: number = 50
   ) {
-    // Users can only get their own history unless they have appropriate permissions
     if (user.userId !== userId && !user.roles?.includes('ADMIN')) {
-      console.warn(`User ${user.userId} attempted to get history for user ${userId}`);
+      throw new ForbiddenException('You can only view your own history');
     }
     return this.aiLifestyleService.getHistory(userId, limit);
   }
@@ -149,9 +142,8 @@ export class AiLifestyleController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('userId') userId: string
   ): Promise<LifestyleScoreDto> {
-    // Users can only get their own score unless they have appropriate permissions
     if (user.userId !== userId && !user.roles?.includes('ADMIN')) {
-      console.warn(`User ${user.userId} attempted to get score for user ${userId}`);
+      throw new ForbiddenException('You can only view your own score');
     }
     return this.aiLifestyleService.getScore(userId);
   }

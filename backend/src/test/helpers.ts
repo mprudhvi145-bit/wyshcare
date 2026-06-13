@@ -114,6 +114,7 @@ export function makeUser(overrides: Record<string, unknown> = {}) {
     fullName: 'Test User',
     preferredLanguage: 'en',
     isPhoneVerified: true,
+    mfaEnabled: false,
     status: 'PENDING',
     chronicConditions: [],
     allergiesSummary: [],

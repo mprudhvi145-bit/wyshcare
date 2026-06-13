@@ -57,9 +57,11 @@ Authentication
 
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaModule } from '../../providers/prisma/prisma.module';
+import { RedisService } from '../../providers/redis/redis.service';
 import { AdminAuthController } from './admin-auth.controller';
 import { AdminAuthService } from './admin-auth.service';
 import { AuthController } from './auth.controller';
@@ -67,6 +69,7 @@ import { AuthService } from './auth.service';
 import { DoctorAuthController } from './doctor-auth.controller';
 import { DoctorAuthService } from './doctor-auth.service';
 import { EmailService } from './email.service';
+import { MfaService } from './mfa.service';
 import { SmsService } from './sms.service';
 import { WyshIdService } from '../../common/services/wysh-id.service';
 
@@ -80,7 +83,11 @@ import { WyshIdService } from '../../common/services/wysh-id.service';
     PrismaModule,
   ],
   controllers: [AuthController, AdminAuthController, DoctorAuthController],
-  providers: [AuthService, AdminAuthService, DoctorAuthService, AuditLogService, EmailService, SmsService, WyshIdService],
-  exports: [AuthService],
+  providers: [
+    AuthService, AdminAuthService, DoctorAuthService,
+    AuditLogService, EmailService, SmsService, WyshIdService,
+    MfaService, RedisService,
+  ],
+  exports: [AuthService, MfaService, SmsService],
 })
 export class AuthModule {}

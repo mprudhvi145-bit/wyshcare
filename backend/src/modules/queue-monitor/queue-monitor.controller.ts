@@ -57,15 +57,17 @@ WyshID
  */
 
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { JobQueueService } from '../../providers/jobs/job-queue.service';
 import type { QueueName } from '../../providers/jobs/job-queue.service';
 
+@ApiBearerAuth()
 @ApiTags('queue-monitor')
-@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('queue')
 export class QueueMonitorController {
   constructor(private readonly jobQueue: JobQueueService) {}

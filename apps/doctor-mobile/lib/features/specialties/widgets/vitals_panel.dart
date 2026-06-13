@@ -92,7 +92,7 @@ class _VitalsPanelState extends ConsumerState<VitalsPanel> {
     if (state.encounterId == null) return;
     setState(() => _saving = true);
     try {
-      await ref.read(doctorSdkProvider).workspace.recordVitals({
+      await ref.read(doctorSdkProvider).ehr.recordVitals({
         'encounterId': state.encounterId,
         'patientId': state.patientId,
         'bloodPressureSystolic': int.tryParse(_bpSys.text),

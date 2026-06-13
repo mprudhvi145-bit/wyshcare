@@ -126,11 +126,23 @@ export class AiIntelligenceService {
       date: e.occurredAt.toISOString().slice(0, 10),
     }));
 
-    const aiSummary = graphContextLines.length > 0
-      ? await this.gemini.generateHealthMemorySummaryFromGraph(graphContextLines)
-      : history.length > 0
-        ? await this.gemini.generateHealthMemorySummary(history)
-        : 'No health history available yet.';
+    let aiSummary: string;
+
+    if (graphContextLines.length > 0) {
+      const result = await this.aiOrchestrator.chat(
+        `Summarize the following patient health graph in clear, patient-safe language. Highlight key conditions, medications, and relationships:\n${graphContextLines.join('\n')}`,
+        { systemPrompt: 'You are a medical summarizer. Provide concise, accurate health summaries.' },
+      );
+      aiSummary = result.content;
+    } else if (history.length > 0) {
+      const result = await this.aiOrchestrator.chat(
+        `Summarize the following patient health timeline events in clear, patient-safe language. Highlight key health events and trends:\n${JSON.stringify(history, null, 2)}`,
+        { systemPrompt: 'You are a medical summarizer. Provide concise, accurate health summaries.' },
+      );
+      aiSummary = result.content;
+    } else {
+      aiSummary = 'No health history available yet.';
+    }
 
     return {
       summary: aiSummary,

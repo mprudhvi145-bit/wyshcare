@@ -60,15 +60,18 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { WyshService } from './wysh.service';
 
 @ApiTags('wysh')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('wysh')
 export class WyshController {
   constructor(private readonly wysh: WyshService) {}
 
+  @Roles('PATIENT', 'DOCTOR')
   @Get('dashboard')
   getDashboard(@CurrentUser() user: AuthenticatedUser) {
     return this.wysh.getDashboard(user.userId);

@@ -58,6 +58,7 @@ Authentication
 
 import { Body, Controller, Get, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -68,6 +69,7 @@ import { AuthService } from './auth.service';
 
 @ApiTags('auth')
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -107,6 +109,27 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: AuthenticatedUser) {
     return this.authService.getCurrentUser(user.userId);
+  }
+
+  @Post('mfa/setup')
+  @UseGuards(JwtAuthGuard)
+  setupMfa(@CurrentUser() user: AuthenticatedUser) {
+    return this.authService.setupUserMfa(user.userId);
+  }
+
+  @Post('mfa/verify')
+  @UseGuards(JwtAuthGuard)
+  verifyMfa(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body('totpCode') totpCode: string,
+  ) {
+    return this.authService.verifyUserMfa(user.userId, totpCode);
+  }
+
+  @Post('mfa/disable')
+  @UseGuards(JwtAuthGuard)
+  disableMfa(@CurrentUser() user: AuthenticatedUser) {
+    return this.authService.disableUserMfa(user.userId);
   }
 
   @UseGuards(JwtAuthGuard)

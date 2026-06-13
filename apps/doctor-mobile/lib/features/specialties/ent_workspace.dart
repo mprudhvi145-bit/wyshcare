@@ -99,7 +99,7 @@ class _EntWorkspaceState extends ConsumerState<EntWorkspace> {
     try {
       final sdk = ref.read(doctorSdkProvider);
 
-      await sdk.client.post('/specialties/ent/encounters', body: {
+      await sdk.client.post('/specialties/ent/encounters', {
         'encounterId': state.encounterId,
         'patientId': state.patientId,
         'providerId': 'provider-id-1234',

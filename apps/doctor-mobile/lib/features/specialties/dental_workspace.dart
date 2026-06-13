@@ -108,7 +108,7 @@ class _DentalWorkspaceState extends ConsumerState<DentalWorkspace> {
         }
       });
 
-      await sdk.client.post('/specialties/dental/encounters', body: {
+      await sdk.client.post('/specialties/dental/encounters', {
         'encounterId': state.encounterId,
         'patientId': state.patientId,
         'providerId': 'provider-id-1234',

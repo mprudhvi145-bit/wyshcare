@@ -61,16 +61,19 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { SearchService } from './search.service';
 import { PaginatedQueryDto } from '../../common/dto/pagination.dto';
 
 @ApiTags('search')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('search')
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
+  @Roles('PATIENT', 'DOCTOR')
   @Get()
   globalSearch(
     @CurrentUser() user: AuthenticatedUser,

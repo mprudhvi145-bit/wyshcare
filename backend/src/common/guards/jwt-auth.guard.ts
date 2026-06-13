@@ -62,6 +62,7 @@ import { Reflector } from '@nestjs/core';
 
 import type { AuthenticatedUser } from '../interfaces/authenticated-user.interface';
 import { PrismaService } from '../../providers/prisma/prisma.service';
+import { RedisService } from '../../providers/redis/redis.service';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
@@ -70,6 +71,7 @@ export class JwtAuthGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -102,7 +104,20 @@ export class JwtAuthGuard implements CanActivate {
       roles: AuthenticatedUser['roles'];
       sessionId?: string;
       tenantId?: string;
+      jti?: string;
+      mfaVerified?: boolean;
+      mfaRequired?: boolean;
     }>(accessToken);
+
+    if (payload.jti) {
+      const client = this.redisService.getClient();
+      if (client) {
+        const blacklisted = await client.get(`blacklist:${payload.jti}`).catch(() => null);
+        if (blacklisted === 'true') {
+          throw new UnauthorizedException('Token has been revoked');
+        }
+      }
+    }
 
     if (payload.sessionId) {
       const session = await this.prisma.deviceSession.findFirst({
@@ -117,6 +132,16 @@ export class JwtAuthGuard implements CanActivate {
       if (!session) {
         throw new UnauthorizedException('Session has expired');
       }
+
+      const inactivityThresholdMs = 24 * 60 * 60 * 1000;
+      if (Date.now() - session.lastSeenAt.getTime() > inactivityThresholdMs) {
+        throw new UnauthorizedException('Session expired due to inactivity');
+      }
+
+      await this.prisma.deviceSession.update({
+        where: { id: session.id },
+        data: { lastSeenAt: new Date() },
+      }).catch(() => {});
     }
 
     request.user = {
@@ -125,6 +150,7 @@ export class JwtAuthGuard implements CanActivate {
       roles: payload.roles,
       sessionId: payload.sessionId,
       tenantId: payload.tenantId,
+      mfaVerified: payload.mfaVerified ?? false,
     };
 
     return true;

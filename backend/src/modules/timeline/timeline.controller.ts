@@ -61,15 +61,18 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { TimelineService } from './timeline.service';
 
 @ApiTags('timeline')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('timeline')
 export class TimelineController {
   constructor(private readonly timelineService: TimelineService) {}
 
+  @Roles('PATIENT', 'DOCTOR')
   @Get()
   list(@CurrentUser() user: AuthenticatedUser) {
     return this.timelineService.list(user.userId);

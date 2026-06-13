@@ -61,50 +61,60 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { CarePlansService } from './care-plans.service';
 
 @ApiTags('care-plans')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('care-plans')
 export class CarePlansController {
   constructor(private readonly carePlans: CarePlansService) {}
 
+  @Roles('PATIENT', 'DOCTOR', 'NURSE')
   @Post()
   create(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) {
     return this.carePlans.create(user.userId, body as Parameters<typeof this.carePlans.create>[1]);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'NURSE')
   @Get()
   list(@CurrentUser() user: AuthenticatedUser) {
     return this.carePlans.findByUser(user.userId);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'NURSE')
   @Get(':id')
   get(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.carePlans.findById(id, user.userId);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'NURSE')
   @Patch(':id/status')
   updateStatus(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() body: { status: string }) {
     return this.carePlans.updateStatus(id, user.userId, body.status);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'NURSE')
   @Post(':id/milestones')
   addMilestone(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() body: Record<string, unknown>) {
     return this.carePlans.addMilestone(id, user.userId, body as Parameters<typeof this.carePlans.addMilestone>[2]);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'NURSE')
   @Patch('milestones/:id/complete')
   completeMilestone(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.carePlans.completeMilestone(id, user.userId);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'NURSE')
   @Post(':id/adherence')
   logAdherence(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() body: Record<string, unknown>) {
     return this.carePlans.logAdherence(id, user.userId, body as Parameters<typeof this.carePlans.logAdherence>[2]);
   }
 
+  @Roles('PATIENT', 'DOCTOR', 'NURSE')
   @Get(':id/adherence')
   getAdherence(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.carePlans.getAdherenceHistory(id, user.userId);

@@ -69,17 +69,20 @@ import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { GoalsService } from './goals.service';
 import { CreateGoalDto, UpdateGoalProgressDto, CreateMilestoneDto } from './dto/create-goal.dto';
 
 @ApiTags('goals')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('goals')
 export class GoalsController {
   constructor(private readonly goalsService: GoalsService) {}
 
+  @Roles('PATIENT')
   @Get()
   list(
     @CurrentUser() user: AuthenticatedUser,
@@ -94,6 +97,7 @@ export class GoalsController {
     });
   }
 
+  @Roles('PATIENT')
   @Post()
   create(
     @CurrentUser() user: AuthenticatedUser,
@@ -102,6 +106,7 @@ export class GoalsController {
     return this.goalsService.create(user.userId, dto);
   }
 
+  @Roles('PATIENT')
   @Patch(':id')
   updateProgress(
     @CurrentUser() user: AuthenticatedUser,
@@ -111,6 +116,7 @@ export class GoalsController {
     return this.goalsService.updateProgress(user.userId, id, dto);
   }
 
+  @Roles('PATIENT')
   @Delete(':id')
   remove(
     @CurrentUser() user: AuthenticatedUser,
@@ -119,6 +125,7 @@ export class GoalsController {
     return this.goalsService.remove(user.userId, id);
   }
 
+  @Roles('PATIENT')
   @Get(':id/milestones')
   getMilestones(
     @CurrentUser() user: AuthenticatedUser,
@@ -127,6 +134,7 @@ export class GoalsController {
     return this.goalsService.getMilestones(user.userId, id);
   }
 
+  @Roles('PATIENT')
   @Post(':id/milestones')
   addMilestone(
     @CurrentUser() user: AuthenticatedUser,
@@ -136,6 +144,7 @@ export class GoalsController {
     return this.goalsService.addMilestone(user.userId, id, dto);
   }
 
+  @Roles('PATIENT')
   @Patch(':id/progress')
   updateGoalProgress(
     @CurrentUser() user: AuthenticatedUser,

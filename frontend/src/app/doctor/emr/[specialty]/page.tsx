@@ -87,6 +87,9 @@ const SPECIALTY_META: Record<string, { name: string; icon: any; color: string; d
   gastroenterology: { name: 'Gastroenterology', icon: ScanLine, color: '#F39C12', desc: 'Endoscopy, GI assessment, liver evaluation' },
   urology: { name: 'Urology', icon: Scan, color: '#1ABC9C', desc: 'Urological exam, diagnostics, procedures' },
   endocrinology: { name: 'Endocrinology', icon: Activity, color: '#E74C3C', desc: 'Hormone assessment, diabetes management, thyroid' },
+  'general-surgery': { name: 'General Surgery', icon: Scan, color: '#6C5CE7', desc: 'Pre-op evaluation, post-op care, surgical notes' },
+  radiology: { name: 'Radiology', icon: ScanSearch, color: '#00CEC9', desc: 'Imaging review, X-ray, MRI, CT interpretation' },
+  anesthesiology: { name: 'Anesthesiology', icon: ScanLine, color: '#FD79A8', desc: 'Pre-anesthesia assessment, pain management, sedation' },
 };
 
 const glassCard = 'rounded-[24px] border border-[rgba(255,255,255,0.08)] bg-[#15181D] backdrop-blur-xl';
@@ -101,7 +104,8 @@ export default function SpecialtyFallbackPage() {
   const builtSpecialties = [
     'general-medicine', 'dental', 'ent', 'dermatology', 'ophthalmology',
     'cardiology', 'pediatrics', 'orthopedics', 'gynecology', 'neurology',
-    'psychiatry', 'pulmonology', 'gastroenterology', 'urology', 'endocrinology'
+    'psychiatry', 'pulmonology', 'gastroenterology', 'urology', 'endocrinology',
+    'general-surgery', 'radiology', 'anesthesiology',
   ];
   const isBuilt = builtSpecialties.includes(params.specialty);
 

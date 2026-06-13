@@ -56,12 +56,19 @@ WyshID
  * ============================================================================
  */
 
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { EntService } from './ent.service';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../common/guards/roles.guard';
+import { Roles } from '../../../common/decorators/roles.decorator';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('Specialty: ENT')
 @ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('DOCTOR', 'NURSE')
+@UseGuards(ThrottlerGuard)
 @Controller('specialties/ent')
 export class EntController {
   constructor(private readonly ent: EntService) {}

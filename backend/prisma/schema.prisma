@@ -19,7 +19,7 @@
 //
 // Responsibilities:
 //  * - Define all database models, relationships, and constraints
- * - Configure indexes for query performance
+//  * - Configure indexes for query performance
 //
 // Models Defined:
 //  - User
@@ -61,12 +61,18 @@ model User {
   chronicConditions                                                        String[]
   allergiesSummary                                                         String[]
   isPhoneVerified                                                          Boolean                    @default(false)
+  mfaSecret                                                                 String?
+  mfaBackupCodes                                                           String?
+  mfaEnabled                                                               Boolean                    @default(false)
+  failedLoginAttempts                                                      Int                        @default(0)
+  lockedUntil                                                              DateTime?
   status                                                                   VerificationStatus         @default(PENDING)
   deletedAt                                                                DateTime?
   createdAt                                                                DateTime                   @default(now())
   updatedAt                                                                DateTime                   @updatedAt
   tenantId                                                                 String?
   abdmLinkage                                                              ABDMLinkage?
+  deviceTokens                                                             UserDeviceToken[]
   aiJobs                                                                   AIJob[]
   aiMemories                                                               AIMemoryNode[]
   AbdmAuditLog                                                             AbdmAuditLog[]
@@ -188,11 +194,12 @@ model UserRole {
 model DeviceSession {
   id                String    @id @default(cuid())
   userId            String
-  refreshTokenId    String?    @index
+  refreshTokenId    String?
   deviceName        String
   deviceFingerprint String
   ipAddress         String
   userAgent         String
+  mfaVerified       Boolean   @default(false)
   lastSeenAt        DateTime  @default(now())
   expiresAt         DateTime
   revokedAt         DateTime?
@@ -207,7 +214,7 @@ model RefreshToken {
   id        String    @id @default(cuid())
   userId    String
   tokenHash String    @unique
-  deviceId  String?   @index
+  deviceId  String?
   expiresAt DateTime
   revokedAt DateTime?
   createdAt DateTime  @default(now())
@@ -517,7 +524,7 @@ model DiagnosticReport {
   id              String       @id @default(cuid())
   healthRecordId  String
   patientUserId   String
-  labPartnerId    String?    @index
+  labPartnerId    String?
   reportType      String
   summary         String?
   abnormalMarkers Json?
@@ -562,8 +569,8 @@ model Appointment {
   slotStartAt         DateTime
   slotEndAt           DateTime
   bookedAt            DateTime             @default(now())
-  paymentOrderId      String?    @index
-  consultationRoomId  String?    @index
+  paymentOrderId      String?
+  consultationRoomId  String?
   tenantId            String?
   clinic              Clinic?              @relation(fields: [clinicId], references: [id])
   doctorProfile       DoctorProfile        @relation(fields: [doctorProfileId], references: [id])
@@ -686,7 +693,7 @@ model PharmacyOrder {
   deliveredAt       DateTime?
   deliveryPartner   String?
   estimatedDelivery DateTime?
-  paymentOrderId    String?    @index
+  paymentOrderId    String?
   tenantId          String?
   trackingUrl       String?
   partner           PharmacyPartner? @relation(fields: [partnerId], references: [id])
@@ -750,6 +757,21 @@ model Notification {
   deliveries NotificationDelivery[]
 
   @@index([userId, status, createdAt])
+}
+
+model UserDeviceToken {
+  id          String   @id @default(cuid())
+  userId      String
+  deviceToken String
+  platform    String?  // "ios", "android", "web"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceToken])
+  @@index([userId])
+  @@index([deviceToken])
 }
 
 model AuditLog {
@@ -875,8 +897,8 @@ model AbdmConsent {
   id                       String                     @id
   patientUserId            String
   consentId                String                     @unique
-  consentManagerId         String     @index
-  hipId                    String?    @index
+  consentManagerId         String 
+  hipId                    String?
   hiuId                    String?
   purpose                  String
   hiTypes                  HiType[]
@@ -1021,7 +1043,7 @@ model CDSAlert {
   severity                          String       @default("MODERATE")
   title                             String
   description                       String
-  triggeredById                     String?    @index
+  triggeredById                     String?
   triggeredByType                   String?
   orderId                           String?
   dismissedAt                       DateTime?
@@ -1074,7 +1096,7 @@ model CareGap {
   closedReason    String?
   completedAt     DateTime?
   completedVia    String?
-  completedRefId  String?    @index
+  completedRefId  String?
   createdAt       DateTime               @default(now())
   updatedAt       DateTime
   DigitalTwin     DigitalTwin            @relation(fields: [twinId], references: [id], onDelete: Cascade)
@@ -1521,8 +1543,8 @@ model Encounter {
   reason                          String?
   reasonCode                      String?
   location                        String?
-  providerId                      String?    @index
-  consultationSessionId           String?    @index
+  providerId                      String?
+  consultationSessionId           String?
   createdAt                       DateTime                 @default(now())
   updatedAt                       DateTime
   ClinicalDocument                ClinicalDocument[]
@@ -1534,6 +1556,7 @@ model Encounter {
   EncounterProcedure              EncounterProcedure[]
   SpecialtyEncounterData          SpecialtyEncounterData[]
   SpecialtyFinding                SpecialtyFinding[]
+  ImagingStudy                    ImagingStudy[]
 
   @@index([patientId])
   @@index([patientId, status])
@@ -1713,7 +1736,7 @@ model InsurancePolicy {
   userId           String
   planId           String
   policyNumber     String             @unique
-  memberId         String     @index
+  memberId         String 
   startDate        DateTime
   endDate          DateTime
   status           PolicyStatus       @default(ACTIVE)
@@ -1834,7 +1857,7 @@ model MedicationAdherenceLog {
 model MedicationAdministration {
   id                                                   String         @id
   patientId                                            String
-  medicationOrderId                                    String?    @index
+  medicationOrderId                                    String?
   medicationName                                       String
   dose                                                 String
   route                                                String         @default("ORAL")
@@ -1918,7 +1941,7 @@ model NHCXClaimSubmission {
 model NHCXConfiguration {
   id                String            @id
   providerId        String            @unique
-  insurerId         String     @index
+  insurerId         String 
   apiEndpoint       String
   clientId          String
   clientSecret      String
@@ -2646,7 +2669,7 @@ model NotificationDelivery {
   notificationId  String              @map("notification_id")
   channel         NotificationChannel
   status          NotificationStatus  @default(PENDING)
-  recipientId     String?             @map("recipient_id") @index
+  recipientId     String?             @map("recipient_id")
   providerMessage String?             @map("provider_message")
   errorMessage    String?             @map("error_message")
   deliveredAt     DateTime?           @map("delivered_at")
@@ -2715,7 +2738,7 @@ model SpecialtyEncounterData {
   encounterId                                  String
   patientId                                    String
   providerId                                   String
-  templateId                                   String?    @index
+  templateId                                   String?
   data                                         Json
   diagrams                                     Json?
   createdAt                                    DateTime  @default(now())
@@ -2752,6 +2775,113 @@ model SpecialtyFinding {
   @@index([patientId, specialtyCode, createdAt])
   @@index([providerId])
   @@index([specialtyCode, patientId])
+}
+
+model ImagingStudy {
+  id              String   @id @default(cuid())
+  patientId       String
+  encounterId     String
+  providerId      String
+  studyInstanceUid String?
+  accessionNumber  String?
+  modality        String
+  bodyPart        String?
+  laterality      String?
+  protocolName    String?
+  status          ImagingStudyStatus @default(ORDERED)
+  priority        ClinicalOrderPriority?
+  clinicalIndication String?
+  technique       String?
+  contrastUsed    Boolean  @default(false)
+  contrastAgent   String?
+  seriesCount     Int      @default(0)
+  instanceCount   Int      @default(0)
+  dicomTags       Json?
+  findings        String?
+  impression      String?
+  recommendations String?
+  reportStatus    ImagingReportStatus @default(PENDING)
+  reportText      String?
+  reportedById    String?
+  reportedAt      DateTime?
+  verifiedById    String?
+  verifiedAt      DateTime?
+  scheduledAt     DateTime?
+  performedAt     DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  Encounter Encounter @relation(fields: [encounterId], references: [id], onDelete: Cascade)
+  Series    ImagingSeries[]
+
+  @@index([patientId, modality, createdAt])
+  @@index([encounterId])
+  @@index([patientId, status])
+  @@index([studyInstanceUid])
+}
+
+model ImagingSeries {
+  id              String   @id @default(cuid())
+  studyId         String
+  seriesInstanceUid String?
+  seriesNumber    Int?
+  modality        String
+  bodyPart        String?
+  laterality      String?
+  protocolName    String?
+  description     String?
+  manufacturer    String?
+  deviceModel     String?
+  institutionName String?
+  dicomTags       Json?
+  instanceCount   Int      @default(0)
+  startedAt       DateTime?
+  endedAt         DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  Study ImagingStudy @relation(fields: [studyId], references: [id], onDelete: Cascade)
+  Instances DicomInstance[]
+
+  @@index([studyId])
+  @@index([seriesInstanceUid])
+}
+
+model DicomInstance {
+  id              String   @id @default(cuid())
+  seriesId        String
+  sopInstanceUid  String?
+  instanceNumber  Int?
+  dicomTags       Json?
+  filePath        String?
+  fileSizeBytes   Int?
+  mimeType        String   @default("application/dicom")
+  thumbnailUrl    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  Series ImagingSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@index([seriesId])
+  @@index([sopInstanceUid])
+}
+
+enum ImagingStudyStatus {
+  ORDERED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  ENTERED_IN_ERROR
+}
+
+enum ImagingReportStatus {
+  PENDING
+  DRAFT
+  FINAL
+  AMENDED
+  CANCELLED
 }
 
 enum GoalCategory {

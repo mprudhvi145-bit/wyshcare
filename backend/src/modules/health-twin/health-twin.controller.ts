@@ -61,25 +61,30 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { HealthTwinService } from './health-twin.service';
 
 @ApiTags('health-twin')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('health-twin')
 export class HealthTwinController {
   constructor(private readonly twin: HealthTwinService) {}
 
+  @Roles('PATIENT', 'DOCTOR')
   @Get()
   getTwin(@CurrentUser() user: AuthenticatedUser) {
     return this.twin.getTwin(user.userId);
   }
 
+  @Roles('PATIENT', 'DOCTOR')
   @Get(':userId')
   getTwinForUser(@CurrentUser() user: AuthenticatedUser, @Param('userId') userId: string) {
     return this.twin.getTwin(userId);
   }
 
+  @Roles('PATIENT', 'DOCTOR')
   @Post('ask')
   askQuestion(@CurrentUser() user: AuthenticatedUser, @Body() body: { question: string; userId?: string }) {
     return this.twin.askQuestion(body.userId ?? user.userId, body.question);

@@ -57,12 +57,13 @@ Authentication
  * ============================================================================
  */
 
-import { ConflictException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { PrismaService } from '../../providers/prisma/prisma.service';
+import { MfaService } from './mfa.service';
 
 @Injectable()
 export class AdminAuthService {
@@ -72,6 +73,7 @@ export class AdminAuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly auditLogService: AuditLogService,
+    private readonly mfaService: MfaService,
   ) {}
 
   async createCredential(email: string, password: string, userId?: string) {
@@ -97,6 +99,10 @@ export class AdminAuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    if (user.lockedUntil && user.lockedUntil > new Date()) {
+      throw new ForbiddenException('Account is temporarily locked due to too many failed attempts');
+    }
+
     const credential = await this.prisma.adminCredential.findUnique({ where: { userId: user.id } });
     if (!credential) {
       throw new UnauthorizedException('Admin account not configured');
@@ -104,27 +110,71 @@ export class AdminAuthService {
 
     const passwordValid = await argon2.verify(credential.passwordHash, password);
     if (!passwordValid) {
+      await this.recordFailedAttempt(user.id);
       await this.auditLogService.capture({
         actorUserId: user.id,
         patientUserId: user.id,
         action: 'ADMIN_LOGIN_FAILED',
         resourceType: 'AUTH',
       });
-
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    await this.clearFailedAttempts(user.id);
+
+    const requiresMfa = credential.mfaEnabled;
     const accessToken = await this.jwtService.signAsync({
       sub: user.id,
       email: user.email,
       roles: user.roles.map((r) => r.role),
       tenantId: user.tenantId ?? undefined,
+      mfaRequired: requiresMfa,
+      mfaVerified: false,
     });
 
     await this.auditLogService.capture({
       actorUserId: user.id,
       patientUserId: user.id,
       action: 'ADMIN_LOGIN_SUCCESS',
+      resourceType: 'AUTH',
+    });
+
+    return {
+      accessToken,
+      expiresIn: 15 * 60,
+      requiresMfa,
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        roles: user.roles.map((r) => r.role),
+      },
+    };
+  }
+
+  async verifyMfaStep(userId: string, totpCode: string) {
+    const credential = await this.prisma.adminCredential.findUnique({ where: { userId } });
+    if (!credential?.mfaSecret) {
+      throw new UnauthorizedException('MFA not configured');
+    }
+
+    const valid = this.mfaService.verifyToken(credential.mfaSecret, totpCode);
+    if (!valid) {
+      throw new UnauthorizedException('Invalid MFA code');
+    }
+
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId }, include: { roles: true } });
+    const accessToken = await this.jwtService.signAsync({
+      sub: user.id,
+      email: user.email,
+      roles: user.roles.map((r) => r.role),
+      tenantId: user.tenantId ?? undefined,
+      mfaVerified: true,
+    });
+
+    await this.auditLogService.capture({
+      actorUserId: userId,
+      action: 'MFA_VERIFIED',
       resourceType: 'AUTH',
     });
 
@@ -140,28 +190,133 @@ export class AdminAuthService {
     };
   }
 
-  async setupMfa(userId: string, _password: string) {
-    this.logger.log(`MFA setup requested for admin ${userId}`);
+  async setupMfa(userId: string, password: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    const credential = await this.prisma.adminCredential.findUnique({ where: { userId } });
+
+    if (!credential) {
+      throw new UnauthorizedException('Admin account not configured');
+    }
+
+    const passwordValid = await argon2.verify(credential.passwordHash, password);
+    if (!passwordValid) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    const { secret, otpauthUrl } = this.mfaService.generateSecret(user.email ?? user.phoneNumber);
+    const { hashed, plain } = this.mfaService.generateBackupCodes();
+
+    await this.prisma.adminCredential.update({
+      where: { userId },
+      data: {
+        mfaSecret: secret,
+        mfaEnabled: false,
+      },
+    });
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { mfaBackupCodes: JSON.stringify(hashed) },
+    });
+
+    const qrCode = await this.mfaService.generateQrCodeDataUrl(otpauthUrl);
+
+    await this.auditLogService.capture({
+      actorUserId: userId,
+      action: 'MFA_SETUP',
+      resourceType: 'AUTH',
+    });
 
     return {
-      mfaAvailable: true,
-      message: 'MFA setup is not yet implemented. A TOTP secret and QR code URI will be returned here.',
+      secret,
+      qrCode,
+      backupCodes: plain,
+      message: 'Scan the QR code with your authenticator app and verify a code to enable MFA.',
     };
   }
 
-  async verifyMfa(_userId: string, _totpCode: string) {
-    return {
-      verified: false,
-      message: 'MFA verification is not yet implemented.',
-    };
+  async verifyMfa(userId: string, totpCode: string) {
+    const credential = await this.prisma.adminCredential.findUnique({ where: { userId } });
+    if (!credential?.mfaSecret) {
+      throw new UnauthorizedException('MFA not configured');
+    }
+
+    const valid = this.mfaService.verifyToken(credential.mfaSecret, totpCode);
+    if (!valid) {
+      throw new UnauthorizedException('Invalid MFA code. Ensure your authenticator app is synchronized.');
+    }
+
+    await this.prisma.adminCredential.update({
+      where: { userId },
+      data: { mfaEnabled: true },
+    });
+
+    await this.auditLogService.capture({
+      actorUserId: userId,
+      action: 'MFA_ENABLED',
+      resourceType: 'AUTH',
+    });
+
+    return { enabled: true };
   }
 
-  async disableMfa(userId: string, _password: string) {
-    this.logger.log(`MFA disable requested for admin ${userId}`);
+  async disableMfa(userId: string, password: string) {
+    const credential = await this.prisma.adminCredential.findUnique({ where: { userId } });
 
-    return {
-      disabled: true,
-      message: 'MFA disable stub — no action taken as MFA is not yet implemented.',
-    };
+    if (!credential) {
+      throw new UnauthorizedException('Admin account not configured');
+    }
+
+    const passwordValid = await argon2.verify(credential.passwordHash, password);
+    if (!passwordValid) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    await this.prisma.adminCredential.update({
+      where: { userId },
+      data: { mfaSecret: null, mfaEnabled: false },
+    });
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { mfaBackupCodes: null },
+    });
+
+    await this.auditLogService.capture({
+      actorUserId: userId,
+      action: 'MFA_DISABLED',
+      resourceType: 'AUTH',
+    });
+
+    return { disabled: true };
+  }
+
+  private async recordFailedAttempt(userId: string) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { failedLoginAttempts: { increment: 1 } },
+    });
+
+    if (user.failedLoginAttempts >= 10) {
+      const lockoutMinutes = Math.min(30 * Math.pow(2, Math.floor(user.failedLoginAttempts / 10) - 1), 480);
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { lockedUntil: new Date(Date.now() + lockoutMinutes * 60_000) },
+      });
+
+      await this.auditLogService.capture({
+        actorUserId: userId,
+        action: 'AUTH_LOCKOUT_TRIGGERED',
+        resourceType: 'AUTH',
+        metadata: { failedAttempts: user.failedLoginAttempts, lockoutMinutes },
+      });
+    }
+  }
+
+  private async clearFailedAttempts(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { failedLoginAttempts: 0, lockedUntil: null },
+    });
   }
 }

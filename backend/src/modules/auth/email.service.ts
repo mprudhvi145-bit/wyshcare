@@ -60,11 +60,13 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
   async sendOtp(email: string, otp: string): Promise<void> {
-    this.logger.warn(`[Email OTP] OTP for ${email}: ${otp}`);
+    const atIndex = email.indexOf('@');
+    const maskedEmail = atIndex > 0 ? email[0] + '***@' + email.slice(atIndex + 1) : '***@***';
+    this.logger.warn(`[Email OTP] OTP for ${maskedEmail}`);
 
     if (process.env.NODE_ENV === 'production') {
       // TODO: Integrate with SMTP / SendGrid / AWS SES for production email delivery
-      this.logger.warn(`Email provider not configured — OTP for ${email} would be sent via email`);
+      this.logger.warn(`Email provider not configured — OTP for ${maskedEmail} would be sent via email`);
     }
   }
 }

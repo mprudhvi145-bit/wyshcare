@@ -89,7 +89,7 @@ class _SoapPanelState extends ConsumerState<SoapPanel> {
     try {
       final sdk = ref.read(doctorSdkProvider);
       final state = ref.read(activePatientStateProvider);
-      final result = await sdk.client.post('/ai/soap/generate', body: {
+      final result = await sdk.client.post('/ai/soap/generate', {
         'encounterId': state.encounterId,
         'patientId': state.patientId,
       });
@@ -111,12 +111,11 @@ class _SoapPanelState extends ConsumerState<SoapPanel> {
 
   Future<void> _save() async {
     final state = ref.read(activePatientStateProvider);
-    if (state.encounterId == null) return;
+    final pId = state.patientId;
+    if (state.encounterId == null || pId == null) return;
     setState(() => _saving = true);
     try {
-      await ref.read(doctorSdkProvider).ehr.createNote({
-        'encounterId': state.encounterId,
-        'patientId': state.patientId,
+      await ref.read(doctorSdkProvider).ehr.createNote(pId, {
         'noteType': 'SOAP',
         'content': 'S: ${_s.text}\nO: ${_o.text}\nA: ${_a.text}\nP: ${_p.text}',
       });

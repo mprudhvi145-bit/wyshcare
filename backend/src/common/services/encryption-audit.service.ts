@@ -98,4 +98,19 @@ export class EncryptionAuditService {
   decrypt(resourceType: string, resourceId: string | undefined, algorithm: string, keyId: string, actorUserId?: string) {
     this.record({ operation: 'decrypt', resourceType, resourceId, algorithm, keyId, actorUserId, outcome: 'success' });
   }
+
+  maskPHIInMetadata(metadata: Record<string, unknown>): Record<string, unknown> {
+    const sensitiveKeys = ['phoneNumber', 'email', 'fullName', 'aadhaar', 'pan', 'abha', 'token', 'password', 'secret'];
+    const masked: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(metadata)) {
+      if (sensitiveKeys.some((k) => key.toLowerCase().includes(k))) {
+        masked[key] = typeof value === 'string' ? value.slice(0, 3) + '***' + value.slice(-2) : '[REDACTED]';
+      } else if (typeof value === 'object' && value !== null) {
+        masked[key] = this.maskPHIInMetadata(value as Record<string, unknown>);
+      } else {
+        masked[key] = value;
+      }
+    }
+    return masked;
+  }
 }

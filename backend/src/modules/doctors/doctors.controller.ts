@@ -61,6 +61,8 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { DoctorsService } from './doctors.service';
 
@@ -74,7 +76,8 @@ export class DoctorsController {
     return this.doctorsService.list();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('DOCTOR')
   @Post('onboarding')
   onboard(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) {
     return this.doctorsService.onboard(user.userId, body);

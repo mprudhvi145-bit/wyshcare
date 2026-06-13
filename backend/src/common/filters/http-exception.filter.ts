@@ -53,6 +53,7 @@ WyshID
  */
 
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import * as Sentry from '@sentry/node';
 import type { Request, Response } from 'express';
 
 @Catch()
@@ -93,6 +94,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     const message = exception instanceof Error ? exception.message : 'Internal server error';
 
+    Sentry.captureException(exception);
     this.logger.error(
       JSON.stringify({
         level: 'error',

@@ -51,7 +51,9 @@ Real-time
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
-@WebSocketGateway({ namespace: '/notifications', cors: { origin: '*' } })
+const wsCorsOrigin = process.env.CORS_ORIGIN?.split(',').map((s) => s.trim()) ?? ['http://localhost:3000'];
+
+@WebSocketGateway({ namespace: '/notifications', cors: { origin: wsCorsOrigin }, transports: ['websocket', 'polling'] })
 export class NotificationsGateway {
   @WebSocketServer()
   server!: Server;

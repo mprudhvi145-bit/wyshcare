@@ -61,12 +61,13 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { TelemedicineService } from './telemedicine.service';
 
 @ApiTags('telemedicine')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('telemedicine')
 export class TelemedicineController {
   constructor(private readonly telemedicineService: TelemedicineService) {}

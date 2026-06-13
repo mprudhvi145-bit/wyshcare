@@ -1,62 +1,3 @@
-/**
- * ============================================================================
- * WYSHCARE PLATFORM
- * ============================================================================
- *
- * File: backend/src/modules/nhcx/nhcx.service.ts
- *
- * Product:
- * WyshCare Healthcare Operating System
- *
- * Brand:
- * WYSH
- *
- * Founder:
- * Vimarshak Prudhvi
- *
- * Purpose:
- * Business logic service for nhcx
- *
- * Responsibilities:
- * - Execute business logic for wyshid operations
- * - Coordinate data access and external API calls
- *
- * Used By:
- - backend/src/modules/prescription/prescription.service.ts
- - backend/src/providers/storage/storage.module.ts
- - backend/src/modules/abdm/abdm.module.ts
- - backend/src/modules/digital-twin/digital-twin.service.ts
- - backend/src/modules/prescription/interaction-engine.service.ts
- - backend/src/modules/interoperability/interoperability.module.ts
- - backend/src/main.ts
- - backend/src/modules/health-graph/health-graph.service.ts
- *
- * Calls:
- - node:crypto
- - client
- - common
- *
- * Dependencies:
- - node:crypto
- - client
- - common
- *
- * Security Notes:
-Standard authentication and authorization apply
- *
- * Business Domain:
-WyshID
- *
- * Last Reviewed:
-2026-06-12
- *
- * ============================================================================
- * (c) Wysh Technologies
- * Built by Vimarshak Prudhvi
- * All Rights Reserved
- * ============================================================================
- */
-
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Prisma, ClaimStatus } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
@@ -116,7 +57,460 @@ export class NHCXService {
     return { ...config, clientSecret: '[REDACTED]' };
   }
 
-  async submitClaim(claimId: string) {
+  // ─── NEW FHIR-Compliant Stubs ───
+
+  async checkEligibility(request: {
+    patientId: string;
+    patientName?: string;
+    insuranceProvider: string;
+    insuranceId: string;
+    policyNumber?: string;
+    purpose: 'validation' | 'discovery' | 'auth-requirement' | 'benefits';
+  }): Promise<Record<string, unknown>> {
+    const bundleId = `eligibility-${randomUUID()}`;
+    const responseId = `cer-${randomUUID()}`;
+    const patientUuid = `urn:uuid:${randomUUID()}`;
+    const insurerUuid = `urn:uuid:${randomUUID()}`;
+    const providerOrgUuid = `urn:uuid:${randomUUID()}`;
+    const coverageUuid = `urn:uuid:${randomUUID()}`;
+    const requestUuid = `urn:uuid:${randomUUID()}`;
+    const now = new Date().toISOString();
+    const today = now.slice(0, 10);
+    const yearEnd = new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10);
+
+    return {
+      resourceType: 'Bundle',
+      id: bundleId,
+      meta: {
+        profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/CoverageEligibilityResponseBundle'],
+      },
+      identifier: { value: bundleId },
+      type: 'collection',
+      timestamp: now,
+      entry: [
+        {
+          fullUrl: `urn:uuid:${responseId}`,
+          resource: {
+            resourceType: 'CoverageEligibilityResponse',
+            id: responseId,
+            meta: {
+              profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/CoverageEligibilityResponse'],
+            },
+            status: 'active',
+            purpose: [request.purpose],
+            patient: { reference: patientUuid, display: request.patientName ?? 'Patient' },
+            created: today,
+            requestor: { reference: providerOrgUuid, display: 'Healthcare Provider' },
+            request: { reference: requestUuid, display: 'CoverageEligibilityRequest' },
+            outcome: 'complete',
+            disposition: 'Policy is currently in-force.',
+            insurer: { reference: insurerUuid, display: request.insuranceProvider },
+            insurance: [{
+              coverage: { reference: coverageUuid, display: request.insuranceId },
+              inforce: true,
+              benefitPeriod: { start: today, end: yearEnd },
+              item: [
+                {
+                  category: { coding: [{ code: 'office', display: 'Office Visit' }] },
+                  benefit: [{ type: { coding: [{ code: 'copay' }] }, allowedMoney: { value: 20, currency: 'INR' } }],
+                },
+                {
+                  category: { coding: [{ code: 'hospital', display: 'Hospital Care' }] },
+                  benefit: [{ type: { coding: [{ code: 'benefit' }] }, allowedMoney: { value: 500000, currency: 'INR' } }],
+                },
+              ],
+            }],
+          },
+        },
+        {
+          fullUrl: requestUuid,
+          resource: {
+            resourceType: 'CoverageEligibilityRequest',
+            id: requestUuid.replace('urn:uuid:', ''),
+            meta: {
+              profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/CoverageEligibilityRequest'],
+            },
+            status: 'active',
+            purpose: [request.purpose],
+            patient: { reference: patientUuid, display: request.patientName ?? 'Patient' },
+            created: now,
+            insurer: { reference: insurerUuid, display: request.insuranceProvider },
+            insurance: [{ focal: true, coverage: { reference: coverageUuid } }],
+          },
+        },
+        {
+          fullUrl: patientUuid,
+          resource: {
+            resourceType: 'Patient',
+            id: patientUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Patient'] },
+            identifier: [{ system: 'https://wyshcare.in/identifier', value: request.patientId }],
+          },
+        },
+        {
+          fullUrl: insurerUuid,
+          resource: {
+            resourceType: 'Organization',
+            id: insurerUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization'] },
+            type: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/organization-type', code: 'ins', display: 'Insurance Company' }] }],
+            name: request.insuranceProvider,
+          },
+        },
+        {
+          fullUrl: providerOrgUuid,
+          resource: {
+            resourceType: 'Organization',
+            id: providerOrgUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization'] },
+            type: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/organization-type', code: 'prov', display: 'Healthcare Provider' }] }],
+            name: 'WyshCare Healthcare',
+          },
+        },
+        {
+          fullUrl: coverageUuid,
+          resource: {
+            resourceType: 'Coverage',
+            id: coverageUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Coverage'] },
+            identifier: [{ system: 'https://wyshcare.in/policynumber/', value: request.insuranceId }],
+            status: 'active',
+            type: { coding: [{ system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'HIP', display: 'health insurance plan policy' }] },
+            subscriber: { reference: patientUuid },
+            subscriberId: request.insuranceId,
+            beneficiary: { reference: patientUuid },
+            relationship: { coding: [{ system: 'http://terminology.hl7.org/CodeSystem/subscriber-relationship', code: 'self' }] },
+            period: { end: yearEnd },
+            payor: [{ reference: insurerUuid, display: request.insuranceProvider }],
+          },
+        },
+      ],
+    };
+  }
+
+  async submitClaim(claim: {
+    use: 'preauthorization' | 'predetermination' | 'claim';
+    patientId: string;
+    patientName?: string;
+    providerId: string;
+    providerName?: string;
+    insurerName?: string;
+    items: Array<{ productOrService: string; unitPrice: number; quantity: number }>;
+  }): Promise<Record<string, unknown>> {
+    const bundleId = `claim-response-${randomUUID()}`;
+    const responseId = `cr-${randomUUID()}`;
+    const claimId = `CLM-${randomUUID().slice(0, 8)}`;
+    const patientUuid = `urn:uuid:${randomUUID()}`;
+    const insurerUuid = `urn:uuid:${randomUUID()}`;
+    const providerOrgUuid = `urn:uuid:${randomUUID()}`;
+    const coverageUuid = `urn:uuid:${randomUUID()}`;
+    const claimUuid = `urn:uuid:${randomUUID()}`;
+    const now = new Date().toISOString();
+    const totalValue = claim.items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+    const nowDate = now.slice(0, 10);
+
+    return {
+      resourceType: 'Bundle',
+      id: bundleId,
+      meta: {
+        profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimResponseBundle'],
+      },
+      identifier: { value: bundleId },
+      type: 'collection',
+      timestamp: now,
+      entry: [
+        {
+          fullUrl: `urn:uuid:${responseId}`,
+          resource: {
+            resourceType: 'ClaimResponse',
+            id: responseId,
+            meta: {
+              profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/ClaimResponse'],
+            },
+            status: 'active',
+            type: {
+              coding: [{ system: 'http://terminology.hl7.org/CodeSystem/claim-type', code: claim.use === 'preauthorization' ? 'professional' : 'institutional' }],
+            },
+            use: claim.use,
+            patient: { reference: patientUuid, display: claim.patientName ?? 'Patient' },
+            created: now,
+            insurer: { reference: insurerUuid, display: claim.insurerName ?? 'NHCX Gateway' },
+            requestor: { reference: providerOrgUuid, display: claim.providerName ?? 'Healthcare Provider' },
+            request: { reference: claimUuid, display: `Claim ${claimId}` },
+            outcome: 'queued',
+            disposition: 'Claim submitted to NHCX gateway for processing',
+            item: claim.items.map((item, i) => ({
+              itemSequence: i + 1,
+              adjudication: [
+                { category: { coding: [{ code: 'submitted', display: 'Submitted Amount' }] }, amount: { value: item.unitPrice * item.quantity, currency: 'INR' } },
+              ],
+            })),
+            total: [
+              { category: { coding: [{ code: 'submitted', display: 'Submitted Amount' }] }, amount: { value: totalValue, currency: 'INR' } },
+            ],
+            insurance: [{ sequence: 1, focal: true, coverage: { reference: coverageUuid, display: claim.insurerName ?? 'NHCX Gateway' } }],
+          },
+        },
+        {
+          fullUrl: claimUuid,
+          resource: {
+            resourceType: 'Claim',
+            id: claimUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Claim'] },
+            identifier: [{ value: claimId }],
+            status: 'active',
+            type: { coding: [{ system: 'http://terminology.hl7.org/CodeSystem/claim-type', code: 'professional', display: 'Professional' }] },
+            use: claim.use,
+            patient: { reference: patientUuid, display: claim.patientName ?? 'Patient' },
+            created: now,
+            insurer: { reference: insurerUuid, display: claim.insurerName ?? 'NHCX Gateway' },
+            provider: { reference: providerOrgUuid, display: claim.providerName ?? 'Healthcare Provider' },
+            priority: { coding: [{ system: 'http://terminology.hl7.org/CodeSystem/processpriority', code: 'normal' }] },
+            insurance: [{ sequence: 1, focal: true, coverage: { reference: coverageUuid } }],
+            item: claim.items.map((item, i) => ({
+              sequence: i + 1,
+              productOrService: { coding: [{ code: item.productOrService }] },
+              unitPrice: { value: item.unitPrice, currency: 'INR' },
+              net: { value: item.unitPrice * item.quantity, currency: 'INR' },
+            })),
+            total: { value: totalValue, currency: 'INR' },
+          },
+        },
+        {
+          fullUrl: patientUuid,
+          resource: {
+            resourceType: 'Patient',
+            id: patientUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Patient'] },
+            identifier: [{ system: 'https://wyshcare.in/identifier', value: claim.patientId }],
+          },
+        },
+        {
+          fullUrl: insurerUuid,
+          resource: {
+            resourceType: 'Organization',
+            id: insurerUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization'] },
+            type: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/organization-type', code: 'ins', display: 'Insurance Company' }] }],
+            name: claim.insurerName ?? 'NHCX Gateway',
+          },
+        },
+        {
+          fullUrl: providerOrgUuid,
+          resource: {
+            resourceType: 'Organization',
+            id: providerOrgUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization'] },
+            type: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/organization-type', code: 'prov', display: 'Healthcare Provider' }] }],
+            name: claim.providerName ?? 'WyshCare Healthcare',
+          },
+        },
+      ],
+    };
+  }
+
+  async checkClaimStatus(claimId: string, submissionRef?: string): Promise<Record<string, unknown>> {
+    const bundleId = `task-${randomUUID()}`;
+    const taskId = `task-${randomUUID()}`;
+    const requesterUuid = `urn:uuid:${randomUUID()}`;
+    const ownerUuid = `urn:uuid:${randomUUID()}`;
+    const now = new Date().toISOString();
+
+    return {
+      resourceType: 'Bundle',
+      id: bundleId,
+      meta: {
+        profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/TaskBundle'],
+      },
+      identifier: { value: bundleId },
+      type: 'collection',
+      timestamp: now,
+      entry: [
+        {
+          fullUrl: `urn:uuid:${taskId}`,
+          resource: {
+            resourceType: 'Task',
+            id: taskId,
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Task'] },
+            status: 'in-progress',
+            intent: 'order',
+            code: { coding: [{ system: 'https://nrces.in/ndhm/fhir/r4/CodeSystem/ndhm-task-code', code: 'status', display: 'Status Check' }] },
+            description: `Status check for claim ${claimId}`,
+            authoredOn: now,
+            lastModified: now,
+            requester: { reference: requesterUuid, display: 'WyshCare Healthcare' },
+            owner: { reference: ownerUuid, display: 'NHCX Gateway' },
+            input: [
+              { type: { coding: [{ code: 'ClaimNumber' }] }, valueString: claimId },
+              ...(submissionRef ? [{ type: { coding: [{ code: 'SubmissionRef' }] }, valueString: submissionRef }] : []),
+            ],
+            output: [
+              { type: { coding: [{ code: 'Status' }] }, valueString: 'PROCESSING' },
+              { type: { coding: [{ code: 'Description' }] }, valueString: 'Claim is being processed by the insurer' },
+            ],
+          },
+        },
+        {
+          fullUrl: requesterUuid,
+          resource: {
+            resourceType: 'Organization',
+            id: requesterUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization'] },
+            type: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/organization-type', code: 'prov', display: 'Healthcare Provider' }] }],
+            name: 'WyshCare Healthcare',
+          },
+        },
+        {
+          fullUrl: ownerUuid,
+          resource: {
+            resourceType: 'Organization',
+            id: ownerUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization'] },
+            type: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/organization-type', code: 'ins', display: 'Insurance Company' }] }],
+            name: 'NHCX Gateway',
+          },
+        },
+      ],
+    };
+  }
+
+  async getProviderDetails(providerId?: string): Promise<Record<string, unknown>> {
+    const bundleId = `insurance-plan-${randomUUID()}`;
+    const planId = `ip-${randomUUID()}`;
+    const orgUuid = `urn:uuid:${randomUUID()}`;
+    const now = new Date().toISOString();
+
+    return {
+      resourceType: 'Bundle',
+      id: bundleId,
+      meta: {
+        profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/InsurancePlanBundle'],
+        security: [{
+          system: 'http://terminology.hl7.org/CodeSystem/v3-Confidentiality',
+          code: 'V',
+          display: 'very restricted',
+        }],
+      },
+      identifier: { value: bundleId },
+      type: 'collection',
+      timestamp: now,
+      entry: [
+        {
+          fullUrl: `urn:uuid:${planId}`,
+          resource: {
+            resourceType: 'InsurancePlan',
+            id: planId,
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/InsurancePlan'] },
+            identifier: [{ system: 'https://irdai.gov.in', value: providerId ?? 'NHCX-DEFAULT' }],
+            status: 'active',
+            type: [{ coding: [{ code: 'HOSP', display: 'Hospitalisation Indemnity Policy' }] }],
+            name: 'WyshCare Standard Health Plan',
+            period: { start: now.slice(0, 10), end: new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10) },
+            ownedBy: { reference: orgUuid, display: 'WyshCare Insurance' },
+            administeredBy: { reference: orgUuid, display: 'WyshCare Insurance' },
+            coverage: [
+              {
+                type: { coding: [{ code: 'inpatient', display: 'Inpatient Care' }] },
+                benefit: [{ type: { coding: [{ code: 'room', display: 'Room Charges' }] } }],
+              },
+              {
+                type: { coding: [{ code: 'outpatient', display: 'Outpatient Care' }] },
+                benefit: [{ type: { coding: [{ code: 'consultation', display: 'Consultation' }] } }],
+              },
+            ],
+            plan: [
+              {
+                identifier: [{ value: 'WYSH-STD-IND' }],
+                type: { coding: [{ code: 'individual', display: 'Individual' }] },
+                generalCost: [{ type: { coding: [{ code: 'premium', display: 'Annual Premium' }] }, value: { value: 15000, currency: 'INR' } }],
+                specificCost: [
+                  {
+                    category: { coding: [{ code: 'room', display: 'Room Charges' }] },
+                    benefit: [{ type: { coding: [{ code: 'room' }] }, cost: [{ type: { coding: [{ code: 'fullcoverage' }] }, value: { value: 5000, currency: 'INR' } }] }],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          fullUrl: orgUuid,
+          resource: {
+            resourceType: 'Organization',
+            id: orgUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization'] },
+            identifier: [{ type: { coding: [{ system: 'https://nrces.in/ndhm/fhir/r4/CodeSystem/ndhm-identifier-type-code', code: 'ROHINI', display: 'ROHINI ID' }] }, system: 'https://rohini.iib.gov.in/', value: providerId ?? 'WYSH-001' }],
+            type: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/organization-type', code: 'ins', display: 'Insurance Company' }] }],
+            name: 'WyshCare Insurance Co. Ltd.',
+          },
+        },
+      ],
+    };
+  }
+
+  async reprocessClaim(claimId: string, reason?: string): Promise<Record<string, unknown>> {
+    const bundleId = `task-reprocess-${randomUUID()}`;
+    const taskId = `task-${randomUUID()}`;
+    const requesterUuid = `urn:uuid:${randomUUID()}`;
+    const ownerUuid = `urn:uuid:${randomUUID()}`;
+    const now = new Date().toISOString();
+
+    return {
+      resourceType: 'Bundle',
+      id: bundleId,
+      meta: {
+        profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/TaskBundle'],
+      },
+      identifier: { value: bundleId },
+      type: 'collection',
+      timestamp: now,
+      entry: [
+        {
+          fullUrl: `urn:uuid:${taskId}`,
+          resource: {
+            resourceType: 'Task',
+            id: taskId,
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Task'] },
+            status: 'requested',
+            intent: 'order',
+            code: { coding: [{ system: 'https://nrces.in/ndhm/fhir/r4/CodeSystem/ndhm-task-code', code: 'reprocess', display: 'Reprocess' }] },
+            description: reason ?? `Request for reprocessing the claim with number - ${claimId}`,
+            authoredOn: now,
+            requester: { reference: requesterUuid, display: 'WyshCare Healthcare' },
+            owner: { reference: ownerUuid, display: 'NHCX Gateway' },
+            input: [
+              { type: { coding: [{ code: 'ClaimNumber' }] }, valueString: claimId },
+              ...(reason ? [{ type: { coding: [{ code: 'Reason' }] }, valueString: reason }] : []),
+            ],
+          },
+        },
+        {
+          fullUrl: ownerUuid,
+          resource: {
+            resourceType: 'Organization',
+            id: ownerUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization'] },
+            type: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/organization-type', code: 'ins', display: 'Insurance Company' }] }],
+            name: 'NHCX Gateway',
+          },
+        },
+        {
+          fullUrl: requesterUuid,
+          resource: {
+            resourceType: 'Organization',
+            id: requesterUuid.replace('urn:uuid:', ''),
+            meta: { profile: ['https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization'] },
+            type: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/organization-type', code: 'prov', display: 'Healthcare Provider' }] }],
+            name: 'WyshCare Healthcare',
+          },
+        },
+      ],
+    };
+  }
+
+  // ─── Existing DB-backed methods ───
+
+  async submitClaimDb(claimId: string) {
     const claim = await this.prisma.claim.findUnique({
       where: { id: claimId },
       include: {

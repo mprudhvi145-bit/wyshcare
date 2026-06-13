@@ -80,7 +80,8 @@ export class SmsService {
         break;
       default:
         // Development / unconfigured: log OTP instead of sending
-        this.logger.warn(`[SMS_PROVIDER not set] OTP for ${phoneNumber}: ${otp}`);
+        const maskedPhone = phoneNumber.length > 4 ? phoneNumber.slice(0, 2) + '****' + phoneNumber.slice(-2) : '****';
+this.logger.warn(`[SMS_PROVIDER not set] OTP for ${maskedPhone}`);
     }
   }
 

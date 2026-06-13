@@ -73,6 +73,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { VaultService } from '../modules/vault/vault.service';
 import { PrismaService } from '../providers/prisma/prisma.service';
+import { RedisService } from '../providers/redis/redis.service';
 import { StorageService } from '../providers/storage/storage.service';
 import { makePrismaMock, makeRecord, makeAuditMock } from './helpers';
 import { AuditLogService } from '../common/services/audit-log.service';
@@ -181,8 +182,9 @@ describe('JwtAuthGuard', () => {
   function makePrismaWithSession(exists: boolean) {
     const prisma = makePrismaMock();
     prisma.deviceSession.findFirst.mock.mockImplementation(async () =>
-      exists ? { id: 'session-1' } : null,
+      exists ? { id: 'session-1', lastSeenAt: new Date() } : null,
     );
+    prisma.deviceSession.update.mock.mockImplementation(async () => ({}));
     return prisma;
   }
 
@@ -193,6 +195,7 @@ describe('JwtAuthGuard', () => {
         Reflector,
         { provide: JwtService, useValue: jwtMock },
         { provide: PrismaService, useValue: prisma },
+        { provide: RedisService, useValue: { getClient: () => null, healthcheck: async () => ({ status: 'ok' as const }) } },
       ],
     }).compile();
     return module.get(JwtAuthGuard);

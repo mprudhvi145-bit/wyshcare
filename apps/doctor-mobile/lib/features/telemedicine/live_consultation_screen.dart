@@ -129,7 +129,7 @@ class _LiveConsultationScreenState extends ConsumerState<LiveConsultationScreen>
       
       // 1. Create Patient Encounter on the backend
       final encounter = await sdk.ehr.createEncounter({
-        'patientUserId': 'patient-id-1234', // Simulated link
+        'patientUserId': 'patient-id-1234',
         'status': 'IN_PROGRESS',
         'type': 'TELEMEDICINE',
       });
@@ -137,9 +137,7 @@ class _LiveConsultationScreenState extends ConsumerState<LiveConsultationScreen>
       final encounterId = encounter['id'] as String;
 
       // 2. Save SOAP Note
-      await sdk.ehr.createNote({
-        'encounterId': encounterId,
-        'patientId': 'patient-id-1234',
+      await sdk.ehr.createNote('patient-id-1234', {
         'noteType': 'SOAP',
         'content': 'Subjective: ${_subjectiveController.text}\nObjective: ${_objectiveController.text}\nAssessment: ${_assessmentController.text}\nPlan: ${_planController.text}',
       });

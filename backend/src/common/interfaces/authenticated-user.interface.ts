@@ -53,4 +53,5 @@ export interface AuthenticatedUser {
   roles: Role[];
   sessionId?: string;
   tenantId?: string;
+  mfaVerified?: boolean;
 }

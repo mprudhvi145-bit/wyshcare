@@ -61,6 +61,8 @@ import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { PharmacyService } from './pharmacy.service';
 
@@ -74,13 +76,15 @@ export class PharmacyController {
     return this.pharmacyService.listPartners();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PATIENT')
   @Get('orders')
   orders(@CurrentUser() user: AuthenticatedUser) {
     return this.pharmacyService.listOrders(user.userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('PATIENT')
   @Post('orders')
   createOrder(@CurrentUser() user: AuthenticatedUser, @Body() body: Record<string, unknown>) {
     return this.pharmacyService.createOrder(user.userId, body);

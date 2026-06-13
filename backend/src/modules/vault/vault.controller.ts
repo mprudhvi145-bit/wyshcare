@@ -57,6 +57,7 @@ Health Locker
  */
 
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -75,11 +76,12 @@ import type { Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
 import type { AuthenticatedUser } from '../../common/interfaces/authenticated-user.interface';
 import { VaultService } from './vault.service';
 
 @ApiTags('vault')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('vault')
 export class VaultController {
   constructor(private readonly vaultService: VaultService) {}
@@ -95,7 +97,11 @@ export class VaultController {
   }
 
   @Post('records/upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: Number(process.env.MAX_UPLOAD_BYTES ?? 25 * 1024 * 1024) },
+    }),
+  )
   upload(
     @CurrentUser() user: AuthenticatedUser,
     @UploadedFile() file: { originalname: string; mimetype: string; size: number; buffer: Buffer },
@@ -103,6 +109,24 @@ export class VaultController {
     @Query('title') title?: string,
     @Query('description') description?: string,
   ) {
+    if (!file) {
+      throw new BadRequestException('No file provided');
+    }
+    const allowedMimes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/tiff',
+      'application/dicom',
+      'application/octet-stream',
+      'text/plain',
+      'text/csv',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    if (!allowedMimes.includes(file.mimetype)) {
+      throw new BadRequestException(`File type '${file.mimetype}' is not supported for medical records`);
+    }
     return this.vaultService.uploadRecord(user.userId, file, {
       recordType,
       title,

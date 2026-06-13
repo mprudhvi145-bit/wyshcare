@@ -56,12 +56,14 @@ Discovery
  * ============================================================================
  */
 
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { DiscoveryService } from './discovery.service';
 
 @ApiTags('discovery')
+@UseGuards(JwtAuthGuard)
 @Controller('discovery')
 export class DiscoveryController {
   constructor(private readonly discoveryService: DiscoveryService) {}

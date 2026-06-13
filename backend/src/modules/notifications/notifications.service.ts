@@ -57,21 +57,41 @@ Notification
  * ============================================================================
  */
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { createTransport } from 'nodemailer';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { NotificationChannel, NotificationStatus, NotificationPriority, Prisma } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { AuditLogService } from '../../common/services/audit-log.service';
 import { DomainEventsService } from '../../providers/events/events.service';
+import { SmsService } from '../auth/sms.service';
 import { NotificationsGateway } from './notifications.gateway';
+import { FcmService } from './providers/fcm.service';
+import { DeviceTokensService } from '../device-tokens/device-tokens.service';
+
+function maskPhone(phone: string): string {
+  if (phone.length <= 4) return '****';
+  return phone.slice(0, 2) + '****' + phone.slice(-2);
+}
+
+function maskEmail(email: string): string {
+  const atIndex = email.indexOf('@');
+  if (atIndex <= 0) return '***@***';
+  return email[0] + '***@' + email.slice(atIndex + 1);
+}
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLogService: AuditLogService,
     private readonly domainEventsService: DomainEventsService,
     private readonly gateway: NotificationsGateway,
+    private readonly smsService: SmsService,
+    private readonly fcmService: FcmService,
+    private readonly deviceTokensService: DeviceTokensService,
   ) {}
 
   /**
@@ -676,14 +696,13 @@ export class NotificationsService {
   }
 
   /**
-   * Mock SMS provider (Twilio)
+   * SMS provider — uses auth SmsService (Twilio/MSG91) when configured, logs otherwise
    */
   private async sendSMS(
     userId: string,
     body: string,
     priority: NotificationPriority,
   ): Promise<string> {
-    // Get user phone number
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { phoneNumber: true },
@@ -693,20 +712,17 @@ export class NotificationsService {
       throw new Error('User phone number not found');
     }
 
-    // Mock implementation - in production, use Twilio
-    console.log(`[SMS MOCK] To: ${user.phoneNumber}, Body: ${body}, Priority: ${priority}`);
-    
-    // Simulate random failure for testing (10% failure rate)
-    if (Math.random() < 0.1) {
-      throw new Error('SMS delivery failed: Network error');
+    try {
+      await this.smsService.sendOtp(user.phoneNumber, body);
+      return `sm_${randomUUID().slice(0, 8)}`;
+    } catch (err) {
+      this.logger.warn(`SMS delivery failed for ${maskPhone(user.phoneNumber)}: ${(err as Error).message}`);
+      throw err;
     }
-
-    // Return mock message ID
-    return `sm_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   /**
-   * Mock Email provider (SendGrid/SMTP)
+   * Email provider — uses nodemailer (SMTP) when configured, logs otherwise
    */
   private async sendEmail(
     userId: string,
@@ -714,7 +730,6 @@ export class NotificationsService {
     body: string,
     priority: NotificationPriority,
   ): Promise<string> {
-    // Get user email
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { email: true },
@@ -724,20 +739,32 @@ export class NotificationsService {
       throw new Error('User email not found');
     }
 
-    // Mock implementation - in production, use SendGrid or SMTP
-    console.log(`[EMAIL MOCK] To: ${user.email}, Subject: ${subject}, Body: ${body}, Priority: ${priority}`);
-    
-    // Simulate random failure for testing (5% failure rate)
-    if (Math.random() < 0.05) {
-      throw new Error('Email delivery failed: Invalid recipient');
+    const smtpHost = process.env.SMTP_HOST;
+    if (smtpHost) {
+      const transporter = createTransport({
+        host: smtpHost,
+        port: Number(process.env.SMTP_PORT ?? 587),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER ?? '',
+          pass: process.env.SMTP_PASS ?? '',
+        },
+      });
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM ?? 'noreply@wyshcare.app',
+        to: user.email,
+        subject,
+        text: body,
+      });
+      return `email_${randomUUID().slice(0, 8)}`;
     }
 
-    // Return mock message ID
-    return `email_${Math.random().toString(36).substr(2, 9)}`;
+    this.logger.warn(`[EMAIL] To: ${maskEmail(user.email)}, Subject: ${subject}`);
+    return `email_${randomUUID().slice(0, 8)}`;
   }
 
   /**
-   * Mock Push notification provider (Firebase/Apple Push)
+   * Push notification provider (Firebase Cloud Messaging)
    */
   private async sendPushNotification(
     userId: string,
@@ -746,26 +773,30 @@ export class NotificationsService {
     payload: Record<string, unknown>,
     priority: NotificationPriority,
   ): Promise<string> {
-    // Get user device tokens
-    const devices = await this.prisma.deviceSession.findMany({
-      where: { userId },
-      select: { id: true },
-    });
+    const extraData: Record<string, string> = {};
+    if (payload && typeof payload === 'object') {
+      for (const [key, value] of Object.entries(payload)) {
+        extraData[key] = String(value ?? '');
+      }
+    }
+    extraData.priority = priority;
 
-    if (devices.length === 0) {
-      throw new Error('No active devices found for user');
+    const tokens = await this.deviceTokensService.getUserTokens(userId);
+    if (tokens.length === 0) {
+      this.logger.warn(`[PUSH] No device tokens for user ${userId}`);
+      return `push_no_device_${Date.now()}`;
     }
 
-    // Mock implementation - in production, use Firebase or APNs
-    console.log(`[PUSH MOCK] User: ${userId}, Devices: ${devices.length}, Subject: ${subject}, Body: ${body}, Priority: ${priority}`);
-    
-    // Simulate random failure for testing (3% failure rate)
-    if (Math.random() < 0.03) {
-      throw new Error('Push notification failed: Invalid device token');
+    const deviceTokens = tokens.map((t) => t.deviceToken);
+    const result = await this.fcmService.sendMulticast(deviceTokens, subject, body, extraData);
+
+    for (const failed of result.failed) {
+      if (failed.error.includes('UNREGISTERED')) {
+        await this.deviceTokensService.removeInvalidToken(failed.token);
+      }
     }
 
-    // Return mock message ID
-    return `push_${Math.random().toString(36).substr(2, 9)}`;
+    return result.success[0] ?? `push_failed_${Date.now()}`;
   }
 
   /**
@@ -787,7 +818,7 @@ export class NotificationsService {
     }
 
     // Mock implementation - in production, use WhatsApp Business API
-    console.log(`[WHATSAPP MOCK] To: ${user.phoneNumber}, Body: ${body}, Priority: ${priority}`);
+    console.log(`[WHATSAPP MOCK] To: ${maskPhone(user.phoneNumber)}, Priority: ${priority}`);
     
     // Simulate random failure for testing (8% failure rate)
     if (Math.random() < 0.08) {
@@ -817,7 +848,7 @@ export class NotificationsService {
     }
 
     // Mock implementation - in production, use Twilio Voice
-    console.log(`[VOICE MOCK] To: ${user.phoneNumber}, Body: ${body}, Priority: ${priority}`);
+    console.log(`[VOICE MOCK] To: ${maskPhone(user.phoneNumber)}, Priority: ${priority}`);
     
     // Simulate random failure for testing (15% failure rate - voice is less reliable)
     if (Math.random() < 0.15) {
