@@ -1,0 +1,27 @@
+name: Code Scan → Notion Sync
+
+on:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run code scan and sync to Notion
+        run: node scripts/notion-code-scan.mjs
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_API_REGISTRY_DB: ${{ secrets.NOTION_API_REGISTRY_DB }}
+          NOTION_TECH_DEBT_DB: ${{ secrets.NOTION_TECH_DEBT_DB }}
+          NOTION_ABDM_DB: ${{ secrets.NOTION_ABDM_DB }}
+          NOTION_HEALTH_SCORE_DB: ${{ secrets.NOTION_HEALTH_SCORE_DB }}
