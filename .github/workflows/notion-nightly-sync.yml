@@ -1,0 +1,29 @@
+name: Nightly Notion Sync
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run nightly sync
+        run: node scripts/notion-nightly-sync.mjs
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_ROADMAP_DB_ID: ${{ secrets.NOTION_ROADMAP_DB_ID }}
+          NOTION_SPRINT_DB_ID: ${{ secrets.NOTION_SPRINT_DB_ID }}
+          NOTION_BUG_DB_ID: ${{ secrets.NOTION_BUG_DB_ID }}
+          NOTION_CEO_PAGE_ID: ${{ secrets.NOTION_CEO_PAGE_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}

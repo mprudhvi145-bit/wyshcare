@@ -1,0 +1,21 @@
+name: Issue → Notion Backlog Sync
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Create backlog item
+        run: node scripts/notion-sync.mjs issue-opened
+        env:
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_ROADMAP_DB_ID: ${{ secrets.NOTION_ROADMAP_DB_ID }}
