@@ -170,7 +170,7 @@ async function syncToNotion(dbId, entries, createEntry) {
     const props = createEntry(entry);
     await notion("/pages", { method: "POST", body: JSON.stringify({ parent: { database_id: dbId }, properties: props }) });
   }
-  console.log(`Synced ${entries.length} entries`);
+  console.log(`Synced ${entries.length} entries to ${dbId}`);
 }
 
 async function main() {
@@ -252,6 +252,8 @@ async function main() {
   ];
 
   console.log("\nSyncing to Notion...");
+  const today = new Date().toISOString().split("T")[0];
+
   await syncToNotion(API_REGISTRY_DB, allRoutes.slice(0, 50), r => ({
     Name: title(`${r.method} ${r.path}`), Method: select(r.method), Controller: richText(r.controller),
     Status: select(r.hasGuard ? "Production" : "Development"),
@@ -259,23 +261,23 @@ async function main() {
     "Auth Required": checkbox(r.hasGuard),
   }));
 
-  const today = new Date().toISOString().split("T")[0];
   await syncToNotion(TECH_DEBT_DB, allDebt.slice(0, 50), d => ({
     Name: title(d.name), Service: select(d.service || "Backend"), "Issue Type": select(d.type),
     Severity: select(d.severity), "Affected File": richText(d.file || ""), Status: select("Open"),
-    "date:date:Discovered Date:start:start": today,
+    "date:Discovered Date:start": { date: { start: today } },
   }));
 
   await syncToNotion(ABDM_DB, abdmStatus, a => ({
     Name: title(a.name), Category: select(a.category), Status: select(a.status),
     "Coverage %": number(a.coverage), "Target %": number(Math.min(1, a.coverage + 0.15)),
-    "date:date:Last Updated:start:start": today,
+    "date:Last Updated:start": { date: { start: today } },
   }));
 
   const trend = s => s >= 80 ? "Up" : s >= 60 ? "Steady" : "Down";
   await syncToNotion(HEALTH_SCORE_DB, healthScores, h => ({
     Name: title(h.name), "Current Score": number(h.current / 100), "Target Score": number(h.target / 100),
-    Trend: select(trend(h.current)), Notes: richText(h.notes), "date:date:Date:start:start": today,
+    Trend: select(trend(h.current)), Notes: richText(h.notes),
+    "date:Date:start": { date: { start: today } },
   }));
 
   console.log("\nScan complete.");
